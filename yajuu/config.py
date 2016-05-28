@@ -6,13 +6,13 @@ import yaml
 
 DEFAULT_CONFIG = {
     'thetvdb': {
-        'api_key': None,
+        'api_key': '',
         'language': 'en'
     },
     'media': {
         'preferred_quality': 1080,
         'minimum_quality': 720,
-        'maximum_quality': None
+        'maximum_quality': 0
     },
     'paths': {
         'base': os.path.expanduser('~/Videos'),
@@ -37,9 +37,15 @@ def check_config(expected, given):
     for key, value in expected.items():
         if key in given:
             if type(value) == dict:
-                config[key] = check_config(value, given[key])
+                if isinstance(given[key], dict):
+                    config[key] = check_config(value, given[key])
+                else:
+                    config[key] = value
             else:
-                config[key] = given[key]
+                if isinstance(given[key], type(value)):
+                    config[key] = given[key]
+                else:
+                    config[key] = value
         else:
             config[key] = value
 
