@@ -2,6 +2,8 @@
 
 import sys
 
+from yajuu.media import Anime
+
 VALID_MEDIAS = ('anime',)
 
 
@@ -27,4 +29,8 @@ def _handle_media_list(media):
 
 
 def _handle_media_download(media, query):
-    pass
+    try:
+        anime = Anime(query)
+    except Anime.MediaNotFoundException:
+        print('The specified anime could not be found.')
+        sys.exit(1)

@@ -10,7 +10,7 @@ Usage:
 import pkg_resources
 from docopt import docopt
 
-from .cli.media import handle_media_cli
+from .cli import handle_media_cli
 
 
 __version__ = pkg_resources.require('yajuu')[0].version
