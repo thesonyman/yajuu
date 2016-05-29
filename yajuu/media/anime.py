@@ -20,6 +20,14 @@ class Anime(SeasonMedia):
         def _get_metadata(self):
             self.metadata['name'] = self._data.EpisodeName
 
+            self.file_path = self.media.get_file_path().format(
+                anime_name=self.media.metadata['name'],
+                season_number=self.season_number,
+                episode_number=self.number,
+                ext='{ext}',
+                **self.metadata
+            )
+
     def __init__(self, query):
         if Anime._db is None:
             Anime._db = api.TVDB(config['thetvdb']['api_key'])

@@ -18,15 +18,8 @@ class SeasonMedia(Media):
 
         def _bind(self, media):
             self.binded = True
+            self.media = media
             self._get_metadata()
-
-            self.file_path = media.get_file_path().format(
-                anime_name=media.metadata['name'],
-                season_number=self.season_number,
-                episode_number=self.number,
-                ext='{ext}',
-                **self.metadata
-            )
 
         @abstractmethod
         def _get_metadata(self):

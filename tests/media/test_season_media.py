@@ -6,10 +6,10 @@ from yajuu.media.season_media import SeasonMedia
 class DummySeasonMedia(SeasonMedia):
     class Episode(SeasonMedia.Episode):
         def _get_metadata(self):
-            pass
+            self.metadata['name'] = 'Dummy Episode'
 
     def __init__(self):
-        super().__init__('')
+        super().__init__('Code Geass')
 
     def _update_metadata(self, query):
         pass
@@ -51,7 +51,7 @@ class MediaSeasonTestcase(TestCase):
         with self.assertRaises(ValueError):
             media._add_episode(1, 'op-1', None)
 
-        media._add_episode(1, 'op-1', DummySeasonMedia.Episode(1))
+        media._add_episode(1, 'op-1', DummySeasonMedia.Episode(1, 1))
         self.assertTrue(
             'op-1' in media._seasons[1],
             'The episode op-1 was not added to the list media._seasons[1].'
@@ -61,6 +61,6 @@ class MediaSeasonTestcase(TestCase):
         media = DummySeasonMedia()
         media._add_season(1)
 
-        _episode = DummySeasonMedia.Episode(1)
+        _episode = DummySeasonMedia.Episode(1, 1)
         media._add_episode(1, 'op-1', _episode)
         self.assertEqual(media.get_episode(1, 'op-1'), _episode)

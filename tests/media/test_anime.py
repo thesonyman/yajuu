@@ -13,7 +13,7 @@ class AnimeTestcase(TestCase):
         code_geass = Anime('code geass')
 
         self.assertEqual(
-            code_geass.metadata['title'],
+            code_geass.metadata['name'],
             'Code Geass: Lelouch of the Rebellion'
         )
 
