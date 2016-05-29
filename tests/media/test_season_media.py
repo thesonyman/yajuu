@@ -24,7 +24,7 @@ class DummySeasonMedia(SeasonMedia):
         pass
 
 
-class MediaTestcase(TestCase):
+class MediaSeasonTestcase(TestCase):
     def test_abstract(self):
         self.assertRaises(TypeError, SeasonMedia, '')
 

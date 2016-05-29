@@ -5,7 +5,7 @@ from contextlib import redirect_stdout
 from yajuu.media import Anime
 
 
-class MediaTestcase(TestCase):
+class AnimeTestcase(TestCase):
     def test_not_found(self):
         self.assertRaises(Anime.MediaNotFoundException, Anime, '')
 
