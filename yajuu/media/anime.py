@@ -1,5 +1,7 @@
 '''Provides the implementation of the anime class.'''
 
+import os
+
 from pytvdbapi import api
 from pytvdbapi.error import TVDBIndexError
 
@@ -11,8 +13,12 @@ class Anime(SeasonMedia):
     _db = None
 
     class Episode(SeasonMedia.Episode):
+        def __init__(self, season_number, data):
+            super().__init__(season_number, data.EpisodeNumber)
+            self._data = data
+
         def _get_metadata(self):
-            pass
+            self.metadata['name'] = self._data.EpisodeName
 
     def __init__(self, query):
         if Anime._db is None:
@@ -61,21 +67,27 @@ class Anime(SeasonMedia):
         # Now we can extract the wanted data
 
         self.metadata = {}
-        self.metadata['title'] = show.SeriesName
+        self.metadata['name'] = show.SeriesName
 
         for season in show:
             self._add_season(season.season_number)
 
             for episode in season:
-                self.Episode(episode.EpisodeNumber)
-
                 self._add_episode(
                     season.season_number, episode.EpisodeNumber,
-                    self.Episode(episode.EpisodeNumber)
+                    self.Episode(season.season_number, episode)
                 )
 
     def get_file_path(self):
-        return 's{season_number}E{episode_number}.{ext}'
+        path = os.path.join(
+            config['paths']['base'],
+            config['paths']['medias']['anime']['base'],
+            self.metadata['name'],
+            config['paths']['medias']['anime']['season'],
+            config['paths']['medias']['anime']['episode']
+        )
+
+        return path
 
     def list_files(self):
         return []
