@@ -9,11 +9,12 @@ class Media(ABC):
         pass
 
     def __init__(self, query):
-        self.metadata = self._get_metadata(query)
+        self.metadata = {}
+        self._update_metadata(query)
         self.metadata.update({'query': query})
 
     @abstractmethod
-    def _get_metadata(self, query):
+    def _update_metadata(self, query):
         """Returns a metadata dict from the query."""
 
         pass
