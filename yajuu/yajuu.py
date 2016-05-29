@@ -10,19 +10,27 @@ Usage:
 import pkg_resources
 from docopt import docopt
 
+from .cli.media import handle_media_cli
+
 
 __version__ = pkg_resources.require('yajuu')[0].version
 
 
 def main():
+    ensure_config_directory()
+    handle_cli()
+
+
+def handle_cli():
+    """Will call submodules in the cli package if needed."""
+
     arguments = docopt(__doc__)
 
     if arguments['--version']:
         print('Yajuu {}'.format(__version__))
     elif arguments['media']:
-        if arguments['list']:
-            print('Listing media {}'.format(arguments['<media>']))
-        elif arguments['download']:
-            print('Download media {}, the query is {}'.format(
-                arguments['<media>'], arguments['<name>']
-            ))
+        handle_media_cli(arguments)
+
+
+def ensure_config_directory():
+    pass
