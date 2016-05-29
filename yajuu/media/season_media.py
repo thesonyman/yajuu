@@ -10,12 +10,16 @@ class SeasonMedia(Media):
     class Episode(ABC):
         def __init__(self, number):
             self.number = number
+            self.metadata = {}
             self.binded = False
-            self.query = None
 
         def _bind(self, media):
-            self.query = media.metadata['query']
             self.binded = True
+            self._get_metadata()
+
+        @abstractmethod
+        def _get_metadata(self):
+            pass
 
     def __init__(self, query):
         self._seasons = {}

@@ -4,6 +4,10 @@ from yajuu.media.season_media import SeasonMedia
 
 
 class DummySeasonMedia(SeasonMedia):
+    class Episode(SeasonMedia.Episode):
+        def _get_metadata(self):
+            pass
+
     def __init__(self):
         super().__init__('')
 
