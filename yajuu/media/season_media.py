@@ -47,6 +47,9 @@ class SeasonMedia(Media):
 
         self._seasons[number] = {}
 
+    def get_seasons(self):
+        return self._seasons
+
     def get_season(self, number):
         if number not in self._seasons:
             raise KeyError('The season {} was not found.'.format(

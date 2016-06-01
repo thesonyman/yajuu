@@ -21,14 +21,13 @@ def handle_media_cli(arguments):
     if arguments['list']:
         _handle_media_list(media)
     elif arguments['download']:
-        # The tuple contains the query and the season(s). 1 or plus is a season
-        # number, 0 means the specials episodes season, and None means all the
-        # seasons.
+        # The tuple contains the query and the season(s) as a list.
+
         queries = list((x, None) for x in arguments['<names>'])
 
         if arguments['--seasons']:
             season_args = (
-                x.strip() for x in arguments['--seasons'].split(', ')
+                x.strip() for x in arguments['--seasons'].split(',')
             )
 
             for index, season_arg in enumerate(season_args):
@@ -56,7 +55,27 @@ def _handle_media_download(media, queries):
     for query, season in queries:
         try:
             anime = Anime(query)
-            animes.append((anime, season))
+
+            if season is not None:
+                if season not in anime.get_seasons():
+                    message = (
+                        'warning: the season n°{} was not found for the anime'
+                        '"{}" (has {} seasons).'
+                    )
+
+                    print(message.format(
+                        season, anime.metadata['name'],
+                        len(anime.get_seasons()) - 1
+                    ))
+
+                    season = []
+                else:
+                    season = [season]
+            else:
+                season = list(anime.get_seasons())
+
+            if len(season) > 0:
+                animes.append((anime, season))
         except Anime.MediaNotFoundException as e:
             print('The specified anime could not be found.')
             sys.exit(1)
@@ -67,9 +86,9 @@ def _handle_media_download(media, queries):
     print(tabulate.tabulate(
         ((
             anime.metadata['name'],
-            'All' if season is None else season if season > 1 else 'Specials'
+            ', '.join(str(x) for x in season)
         ) for anime, season in animes),
-        headers=('Name', 'Season'), tablefmt='psql'
+        headers=('Name', 'Season(s)'), tablefmt='psql'
     ))
 
     print('\n')
