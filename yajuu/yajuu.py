@@ -2,9 +2,15 @@
 
 Usage:
     yajuu media list <media>
-    yajuu media download <media> <name>
+    yajuu media download <media> (<names> ...) [--seasons=<seasons>]
     yajuu (-h | --help)
     yajuu --version
+
+Options:
+    -s, --seasons=<seasons> String that tell which seasons to download.
+                            Separate the medias using comas. For 'A', 'B' you
+                            could pass -s '1, 1'. Pass -1 to target all the
+                            seasons.
 '''
 
 import pkg_resources
