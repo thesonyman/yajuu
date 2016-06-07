@@ -14,6 +14,14 @@ class Media(ABC):
         self.metadata.update({'query': query})
 
     @abstractmethod
+    def __eq__(self, other):
+        pass
+
+    @abstractmethod
+    def __ne__(self, other):
+        pass
+
+    @abstractmethod
     def _update_metadata(self, query):
         """Returns a metadata dict from the query."""
 

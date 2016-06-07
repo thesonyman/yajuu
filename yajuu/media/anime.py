@@ -34,6 +34,15 @@ class Anime(SeasonMedia):
 
         super().__init__(query)
 
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__) and
+            self.metadata['id'] == other.metadata['id']
+        )
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def _update_metadata(self, query):
         # First, fetch the show itself
 
@@ -75,6 +84,7 @@ class Anime(SeasonMedia):
         # Now we can extract the wanted data
 
         self.metadata = {}
+        self.metadata['id'] = show.id
         self.metadata['name'] = show.SeriesName
 
         for season in show:

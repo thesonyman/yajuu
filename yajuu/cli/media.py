@@ -4,6 +4,8 @@ import sys
 import tabulate
 
 from yajuu.media import Anime
+from yajuu.extractors.anime.anime_orchestrator import AnimeOrchestrator
+from yajuu.extractors.anime.htvanime import HtvanimeExtractor
 
 VALID_MEDIAS = ('anime',)
 
@@ -22,7 +24,6 @@ def handle_media_cli(arguments):
         _handle_media_list(media)
     elif arguments['download']:
         # The tuple contains the query and the season(s) as a list.
-
         queries = list((x, None) for x in arguments['<names>'])
 
         if arguments['--seasons']:
@@ -75,7 +76,20 @@ def _handle_media_download(media, queries):
                 season = list(anime.get_seasons())
 
             if len(season) > 0:
-                animes.append((anime, season))
+                found = False
+
+                for index, _data in enumerate(animes):
+                    if _data[0] == anime:
+                        found = True
+
+                        # Combine the seasons, keep the unique values and sort
+                        # them.
+                        season = list(set(_data[1] + season))
+                        animes[index] = (anime, season)
+
+                if not found:
+                    animes.append((anime, season))
+
         except Anime.MediaNotFoundException as e:
             print('The specified anime could not be found.')
             sys.exit(1)
@@ -98,7 +112,9 @@ def _handle_media_download(media, queries):
 
     while choice is None:
         try:
-            user_input = input(':: Proceed with downloading? [Y/n] ').lower()
+            user_input = input(
+                ':: Is the above information correct? [Y/n] '
+            ).lower()
         except KeyboardInterrupt:
             choice = False
             continue
@@ -112,3 +128,17 @@ def _handle_media_download(media, queries):
         sys.exit(0)
 
     print('\n:: Preparing the extractors')
+
+    orchestrators = []
+
+    for anime, season in animes:
+        orchestrator = AnimeOrchestrator(
+            [HtvanimeExtractor], anime, anime.metadata['name']
+        )
+        orchestrator.search()
+
+        orchestrators.append(orchestrator)
+
+    for orchestrator in orchestrators:
+        sources = orchestrator.extract()
+        print(orchestrator.media.metadata['name'], sources)
