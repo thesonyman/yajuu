@@ -1,11 +1,21 @@
 '''Provides an entry point for the media command.'''
 
+import os
 import sys
+import shlex
+import urllib.parse
+import glob
+import minidom
+
 import tabulate
+import requests
 
 from yajuu.media import Anime
+from yajuu.config import config
+from .utils import confirm
 from yajuu.extractors.anime.anime_orchestrator import AnimeOrchestrator
 from yajuu.extractors.anime.htvanime import HtvanimeExtractor
+from yajuu.extractors.anime.anime_haven import AnimeHavenExtractor
 
 VALID_MEDIAS = ('anime',)
 
@@ -108,37 +118,146 @@ def _handle_media_download(media, queries):
     print('\n')
 
     # Get confirmation from the user to start
-    choice = None
-
-    while choice is None:
-        try:
-            user_input = input(
-                ':: Is the above information correct? [Y/n] '
-            ).lower()
-        except KeyboardInterrupt:
-            choice = False
-            continue
-
-        if user_input == '' or user_input == 'y':
-            choice = True
-        elif user_input == 'n':
-            choice = False
+    choice = confirm('Is the above information correct?')
 
     if not choice:
         sys.exit(0)
 
-    print('\n:: Preparing the extractors')
+    print('\n:: Preparing the extractors\n')
 
     orchestrators = []
 
     for anime, season in animes:
         orchestrator = AnimeOrchestrator(
-            [HtvanimeExtractor], anime, anime.metadata['name']
+            [HtvanimeExtractor, AnimeHavenExtractor], anime, season
         )
+
         orchestrator.search()
 
         orchestrators.append(orchestrator)
 
+    min_quality = config['media']['minimum_quality']
+    max_quality = config['media']['maximum_quality']
+    preferred_quality = config['media']['preferred_quality']
+
+    def filter_quality(source):
+        quality = source[0]
+
+        if quality < min_quality:
+            return False
+        elif max_quality > 0 and quality > max_quality:
+            return False
+
+        return True
+
     for orchestrator in orchestrators:
         sources = orchestrator.extract()
-        print(orchestrator.media.metadata['name'], sources)
+
+        print(':: Downloading anime "{}"'.format(
+            orchestrator.media.metadata['name']
+        ))
+
+        base_path = os.path.join(
+            config['paths']['base'],
+            config['paths']['medias']['anime']['base'],
+            orchestrator.media.metadata['name']
+        )
+
+        if not os.path.exists(base_path):
+            os.makedirs(base_path)
+
+        for season, episodes_sources in sources.items():
+            print('=> Season {0:02d}'.format(season))
+
+            season_path = os.path.join(
+                base_path,
+                config['paths']['medias']['anime']['season'].format(
+                    season_number=season
+                )
+            )
+
+            if not os.path.exists(season_path):
+                os.makedirs(season_path)
+
+            for episode_number, episode_sources in episodes_sources.items():
+                episode_sources = list(filter(
+                    filter_quality,
+                    episode_sources
+                ))
+
+                if len(episode_sources) <= 0:
+                    print(episode_number, ':: None')
+                    continue
+
+                if preferred_quality in map(lambda x: x[0], episode_sources):
+                    for quality, url in episode_sources:
+                        if quality == preferred_quality:
+                            source = (quality, url)
+                            break
+                else:
+                    source = max(episode_sources, key=lambda x: x[0])
+
+                path = urllib.parse.urlparse(source[1]).path
+                ext = os.path.splitext(path)[1][1:]
+
+                if ext == '':
+                    ext = 'mp4'
+
+                episode_name = (
+                    config['paths']['medias']['anime']['episode'].format(
+                        anime_name=orchestrator.media.metadata['name'],
+                        season_number=season, episode_number=episode_number,
+                        ext='{}'
+                    )
+                )
+
+                episode_path = os.path.join(season_path, episode_name)
+
+                # Try to find out if the file already exists
+                exists = len(glob.glob(
+                    episode_path.format('*')  # Replace ext with *
+                )) > 0
+
+                if exists:
+                    print('[SKIPPING] already downloaded')
+                    continue
+
+                print('Downloading episode {} at {}p'.format(
+                    episode_number, source[0]
+                ))
+
+                os.system(config['misc']['downloader'].format(
+                    dirname=shlex.quote(season_path),
+                    filename=shlex.quote(episode_name.format(ext)),
+                    filepath=shlex.quote(episode_path.format(ext)),
+                    url=shlex.quote(source[1])
+                ))
+
+                print('')
+
+                # Now we reload the plex libraries
+                if config['plex_reloader']['enabled']:
+                    base_plex_url = 'http://{}:{}/library/sections'.format(
+                        config['plex_reloader']['host'],
+                        str(config['plex_reloader']['port'])
+                    )
+
+                    xml_sections = minidom.parseString(
+                        requests.get(base_plex_url).text
+                    ).getElementsByTagName('Directory')
+
+                    for section in xml_sections:
+                        section_title = section.getAttribute('title')
+
+                        if (
+                            section_title not in
+                            config['plex_reloader']['sections'] or
+                            len(config['plex_reloader']['sections']) <= 0
+                        ):
+                            continue
+
+                        requests.get('{}/{}/refresh'.format(
+                            base_plex_url, section.getAttribute('key')
+                        ))
+
+    print('\n:: All done!')

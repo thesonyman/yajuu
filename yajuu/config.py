@@ -23,6 +23,15 @@ DEFAULT_CONFIG = {
                 'episode': '{anime_name} - S{season:02d}e{number:03d}.mp4'
             }
         }
+    },
+    'plex_reload': {
+        'enabled': False,
+        'host': 'localhost',
+        'post': 32400,
+        'sections': []
+    },
+    'misc': {
+        'downloader': 'wget {filename} {url}'
     }
 }
 

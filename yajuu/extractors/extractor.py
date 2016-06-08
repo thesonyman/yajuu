@@ -9,3 +9,7 @@ class Extractor(ABC):
     @abstractmethod
     def search(self):
         pass
+
+    @abstractmethod
+    def extract(self, result):
+        pass
