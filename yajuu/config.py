@@ -27,7 +27,7 @@ DEFAULT_CONFIG = {
     'plex_reload': {
         'enabled': False,
         'host': 'localhost',
-        'post': 32400,
+        'port': 32400,
         'sections': []
     },
     'misc': {

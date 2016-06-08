@@ -1,7 +1,7 @@
 import re
 
 from .anime_extractor import AnimeExtractor
-from extractors.unshorten import unshorten
+from ..unshorten import unshorten
 
 
 class AnimeHavenExtractor(AnimeExtractor):

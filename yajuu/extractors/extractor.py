@@ -17,7 +17,7 @@ class Extractor(ABC):
     def extract(self, result):
         pass
 
-    def _as_soup(url, method='get', data=None, json=None, strip=False):
+    def _as_soup(self, url, method='get', data=None, json=None, strip=False):
         '''Helper method to get an url as a beautifulsoup object.'''
 
         if method == 'post' or data or json:
@@ -28,7 +28,7 @@ class Extractor(ABC):
             elif json:
                 kwargs['json'] = json
 
-            source = requests.post(url, **kwargs)
+            source = requests.post(url, **kwargs).text
         elif method == 'get':
             source = requests.get(url).text
         else:

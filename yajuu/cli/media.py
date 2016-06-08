@@ -5,7 +5,7 @@ import sys
 import shlex
 import urllib.parse
 import glob
-import minidom
+from xml.dom import minidom
 
 import tabulate
 import requests
@@ -37,18 +37,25 @@ def handle_media_cli(arguments):
         queries = list((x, None) for x in arguments['<names>'])
 
         if arguments['--seasons']:
-            season_args = (
-                x.strip() for x in arguments['--seasons'].split(',')
+            season_args = list(
+                x.strip().split(',') for x in arguments['--seasons'].split(';')
             )
 
-            for index, season_arg in enumerate(season_args):
-                try:
-                    season_arg = int(season_arg)
+            for index, seasons in enumerate(season_args):
+                if not (0 <= index < len(queries)):
+                    continue
 
-                    if 0 <= index < len(queries):
-                        queries[index] = (queries[index][0], season_arg)
-                except (ValueError, TypeError):
-                    pass
+                # Filter out the seasons that are not castable to an int
+                good_seasons = []
+
+                for season in seasons:
+                    try:
+                        season = int(season)
+                        good_seasons.append(season)
+                    except ValueError:
+                        pass
+
+                queries[index] = (queries[index][0], good_seasons)
 
         _handle_media_download(media, queries)
 
@@ -63,46 +70,47 @@ def _handle_media_download(media, queries):
 
     animes = []
 
-    for query, season in queries:
-        try:
-            anime = Anime(query)
+    for query, seasons in queries:
+        for season in seasons:
+            try:
+                anime = Anime(query)
 
-            if season is not None:
-                if season not in anime.get_seasons():
-                    message = (
-                        'warning: the season n°{} was not found for the anime'
-                        '"{}" (has {} seasons).'
-                    )
+                if season is not None:
+                    if season not in anime.get_seasons():
+                        message = (
+                            'warning: the season n°{} was not found for the '
+                            'anime "{}" (has {} seasons).'
+                        )
 
-                    print(message.format(
-                        season, anime.metadata['name'],
-                        len(anime.get_seasons()) - 1
-                    ))
+                        print(message.format(
+                            season, anime.metadata['name'],
+                            len(anime.get_seasons()) - 1
+                        ))
 
-                    season = []
+                        season = []
+                    else:
+                        season = [season]
                 else:
-                    season = [season]
-            else:
-                season = list(anime.get_seasons())
+                    season = list(anime.get_seasons())
 
-            if len(season) > 0:
-                found = False
+                if len(season) > 0:
+                    found = False
 
-                for index, _data in enumerate(animes):
-                    if _data[0] == anime:
-                        found = True
+                    for index, _data in enumerate(animes):
+                        if _data[0] == anime:
+                            found = True
 
-                        # Combine the seasons, keep the unique values and sort
-                        # them.
-                        season = list(set(_data[1] + season))
-                        animes[index] = (anime, season)
+                            # Combine the seasons, keep the unique values and
+                            # sort them.
+                            season = list(set(_data[1] + season))
+                            animes[index] = (anime, season)
 
-                if not found:
-                    animes.append((anime, season))
+                    if not found:
+                        animes.append((anime, season))
 
-        except Anime.MediaNotFoundException as e:
-            print('The specified anime could not be found.')
-            sys.exit(1)
+            except Anime.MediaNotFoundException as e:
+                print('The specified anime could not be found.')
+                sys.exit(1)
 
     # Print the summary before starting
     print('\nAnimes to download now: ')
@@ -236,10 +244,10 @@ def _handle_media_download(media, queries):
                 print('')
 
                 # Now we reload the plex libraries
-                if config['plex_reloader']['enabled']:
+                if config['plex_reload']['enabled']:
                     base_plex_url = 'http://{}:{}/library/sections'.format(
-                        config['plex_reloader']['host'],
-                        str(config['plex_reloader']['port'])
+                        config['plex_reload']['host'],
+                        str(config['plex_reload']['port'])
                     )
 
                     xml_sections = minidom.parseString(
@@ -251,8 +259,8 @@ def _handle_media_download(media, queries):
 
                         if (
                             section_title not in
-                            config['plex_reloader']['sections'] or
-                            len(config['plex_reloader']['sections']) <= 0
+                            config['plex_reload']['sections'] or
+                            len(config['plex_reload']['sections']) <= 0
                         ):
                             continue
 

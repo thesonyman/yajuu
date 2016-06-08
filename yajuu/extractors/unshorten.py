@@ -2,7 +2,7 @@
 website, that includes the stream quality and direct source.
 '''
 
-import urllib.parser
+import urllib.parse
 import re
 
 import requests
