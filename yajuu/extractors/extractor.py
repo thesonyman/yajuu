@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import urllib.parse
 
 import requests
 from bs4 import BeautifulSoup
@@ -17,8 +18,14 @@ class Extractor(ABC):
     def extract(self, result):
         pass
 
-    def _as_soup(self, url, method='get', data=None, json=None, strip=False):
+    def _as_soup(
+        self, url, method='get', params=None, data=None, json=None,
+        strip=False
+    ):
         '''Helper method to get an url as a beautifulsoup object.'''
+
+        if params:
+            url = url.format(params=urllib.parse.urlencode(params))
 
         if method == 'post' or data or json:
             kwargs = {}
