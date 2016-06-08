@@ -1,11 +1,10 @@
 import re
-import urllib.parse
 
 import requests
 from bs4 import BeautifulSoup
-import cfscrape
 
 from .anime_extractor import AnimeExtractor
+from extractors.unshorten import unshorten
 
 
 class AnimeHavenExtractor(AnimeExtractor):
@@ -50,10 +49,6 @@ class AnimeHavenExtractor(AnimeExtractor):
 
         page_regex = re.compile(r'(http://.+/page/)([0-9]+)')
         episode_regex = re.compile(r'http://.+-episode-([0-9]+)')
-        tiwi_kiwi_regex = re.compile(r'[0-9]+x([0-9]+), .+ [a-zA-Z]+')
-        tiwi_kiwi_onclick_regex = re.compile(
-            r"download_video\('(.+)','(.+)','(.+)'\)"
-        )
 
         discovered_episodes = []
 
@@ -107,80 +102,23 @@ class AnimeHavenExtractor(AnimeExtractor):
                 sources[episode_number] = []
 
             for quality_span, url in download_links:
+                # For certain videos, the download link is available on the
+                # website. We can directly fetch those links.
                 if quality_span is not None:
                     quality = int(
                         ''.join(x for x in quality_span.text if x.isdigit())
                     )
 
                     sources[episode_number].append((quality, url))
-                elif (
-                    quality_span is None and
-                    urllib.parse.urlsplit(url).netloc == 'tiwi.kiwi'
-                ):
-                    s = requests.session()
 
-                    tiwi_kiwi_soup = BeautifulSoup(
-                        s.get(url).text, 'html.parser'
-                    )
+                    continue
 
-                    download_table = tiwi_kiwi_soup.find('table', {
-                        'class': 'tbl1'
-                    })
+                # Else, we just try to use our unshortener
+                sources = unshorten(url)
 
-                    if not download_table:
-                        continue
+                if not sources:
+                    continue
 
-                    for tr in download_table.find_all('tr'):
-                        if len(tr.find_all('a')) > 0:
-                            quality_regex = re.search(
-                                tiwi_kiwi_regex,
-                                tr.find_all('td')[1].text
-                            )
-
-                            if not quality_regex:
-                                continue
-
-                            quality = int(quality_regex.group(1))
-
-                            onclick_regex_result = re.search(
-                                tiwi_kiwi_onclick_regex,
-                                tr.find('a').get('onclick')
-                            )
-
-                            if not onclick_regex_result:
-                                continue
-
-                            code = onclick_regex_result.group(1)
-                            mode = onclick_regex_result.group(2)
-                            hash = onclick_regex_result.group(3)
-
-                            url = (
-                                'http://tiwi.kiwi/dl?op=download_orig&id={}&'
-                                'mode={}&hash={}'.format(code, mode, hash)
-                            )
-
-                            retries = 10
-                            retry = 0
-
-                            while retry < retries:
-                                download_soup = BeautifulSoup(
-                                    s.get(url).text, 'html.parser'
-                                )
-
-                                span = download_soup.find('div', {
-                                    'id': 'container'
-                                }).find('span')
-
-                                if not span:
-                                    retry += 1
-                                    print('-> retries={}/{}'.format(
-                                        retry, retries
-                                    ))
-                                    continue
-
-                                link = span.find('a').get('href')
-
-                                sources[episode_number].append((quality, link))
-                                break
+                sources[episode_number] += sources
 
         return sources
