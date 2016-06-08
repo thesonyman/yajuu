@@ -1,24 +1,18 @@
 import re
 
-import requests
-from bs4 import BeautifulSoup
-
 from .anime_extractor import AnimeExtractor
 from extractors.unshorten import unshorten
 
 
 class AnimeHavenExtractor(AnimeExtractor):
     def search(self):
-        # Remove all the unnecessary signs
-        response = requests.post(
+        soup = self._as_soup(
             'http://animehaven.org/wp-admin/admin-ajax.php',
             data={
                 'action': 'search_ajax',
                 'keyword': self.media.metadata['name']
             }
-        ).text.replace('\\n', '').replace('\\t', '').replace('\\', '')
-
-        soup = BeautifulSoup(response, 'html.parser')
+        )
 
         results = []
 
@@ -27,9 +21,7 @@ class AnimeHavenExtractor(AnimeExtractor):
             link = title_block.find('a')  # The first one is the good one
             title, href = link.get('title'), link.get('href')
 
-            versions_soup = BeautifulSoup(
-                requests.get(href).text, 'html.parser'
-            )
+            versions_soup = self._as_soup(href)
 
             versions = list(
                 ('Sub' if 'sub' in x.text.lower() else 'Dub', x.get('href'))
@@ -53,8 +45,9 @@ class AnimeHavenExtractor(AnimeExtractor):
         discovered_episodes = []
 
         while page <= pages:
-            soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+            soup = self._as_soup(url)
 
+            # We first try to determinate how much pages there is to process
             if page == 1:
                 pagination_links = soup.find(
                     'nav', {'class': 'pagination'}
@@ -67,6 +60,7 @@ class AnimeHavenExtractor(AnimeExtractor):
                 pages_url_base = page_regex_results.group(1)
                 pages = int(page_regex_results.group(2))
 
+            # The episodes are listed on each page as posts.
             episodes = soup.find_all('article', {'class': 'post'})
             discovered_episodes += list(
                 x.find('h2').find('a').get('href') for x in episodes
@@ -77,6 +71,7 @@ class AnimeHavenExtractor(AnimeExtractor):
 
         sources = {}
 
+        # Now that we have all the internal links, we can fetch the real ones
         for link in discovered_episodes:
             episode_number_search = re.search(episode_regex, link)
 
@@ -86,7 +81,7 @@ class AnimeHavenExtractor(AnimeExtractor):
             episode_number = int(episode_number_search.group(1))
             print('[AnimeHaven] Processing episode {}'.format(episode_number))
 
-            soup = BeautifulSoup(requests.get(link).text, 'html.parser')
+            soup = self._as_soup(link)
 
             download_div = soup.find('div', {'class': 'download_feed_link'})
 
