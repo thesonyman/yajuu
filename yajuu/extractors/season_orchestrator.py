@@ -1,72 +1,74 @@
-import difflib
+import concurrent.futures
 
-from yajuu.cli.utils import select
 from .orchestrator import Orchestrator
 
 
 class SeasonOrchestrator(Orchestrator):
-    def __init__(self, extractors, media, season):
-        self.season = season
+    def __init__(self, extractors, media, seasons):
+        self._seasons = seasons
         super().__init__(extractors, media)
 
     def _create_extractors(self, extractors):
-        self.extractors = list(e(
-            self.media, self.season
-        ) for e in extractors)
+        _extractors = {}
 
-    def _get_select_message(self, extractor, season):
-        return (
-            'For the extractor "{}", season {}, please select the correct '
-            'result'
-        ).format(type(extractor).__name__, season)
+        for season in self._seasons:
+            _extractors[season] = dict(
+                (x(self.media, season), None) for x in extractors.copy()
+            )
+
+        return _extractors
 
     def search(self):
-        extractors_with_identifiers = {}
-        query = self._get_query()
+        for season in self._seasons:
+            extractors = self._extractors[season].copy()
 
-        for season in self.season:
-            extractors_with_identifiers[season] = {}
-
-            for extractor in self.extractors:
-                results = extractor.search()
-
-                # Sort the results by similarity with the media title
-                results = sorted(
-                    results,
-                    key=lambda x: difflib.SequenceMatcher(
-                        a=query.lower(), b=x[0].lower()
-                    ).ratio(),
-                    reverse=True
-                )
-
-                message = self._get_select_message(extractor, season)
-
-                result = select(message, results)
+            for extractor in extractors:
+                result = self._select_result(extractor, (
+                    'Please select the correct result for the media "{}", '
+                    'season {}'.format(
+                        self.media.metadata['name'], season
+                    )
+                ))
 
                 if result:
-                    extractors_with_identifiers[season][extractor] = result
+                    self._extractors[season][extractor] = result
+                else:
+                    del self._extractors[season][extractor]
 
-        self.extractors = extractors_with_identifiers
+                print('')
+
+        self.searched = True
 
     def extract(self):
-        if type(self.extractors) == list:
-            raise Exception(
-                "Can't extract before searching. Please call search."
-            )
+        if not self.searched:
+            raise self.NOT_SEARCHED_EXCEPTION
 
         sources = {}
 
-        for season, extractors in self.extractors.items():
+        for season in self._seasons:
             sources[season] = {}
 
-            for extractor, result in extractors.items():
-                extractor_sources = extractor.extract(season, result)
+            with concurrent.futures.ThreadPoolExecutor(6) as executor:
+                executors_sources = executor.map(self._map_extractor_sources, (
+                    (x[0], season, x[1])
+                    for x in self._extractors[season].items()
+                ))
 
-                for episode_number, episode_sources in extractor_sources.items():
-                    if episode_number not in sources[season]:
-                        sources[season][episode_number] = []
+                for season, executor_sources in executors_sources:
+                    for ep_number, episode_sources in executor_sources.items():
+                        if ep_number not in sources[season]:
+                            sources[season][ep_number] = []
 
-                    for source in episode_sources:
-                        sources[season][episode_number].append(source)
+                        sources[season][ep_number] += episode_sources
 
         return sources
+
+    def _map_extractor_sources(self, data):
+        extractor, season, result = data
+        extractor_name = type(extractor).__name__
+
+        print('[{}] Starting extractor'.format(extractor_name))
+        extractor_sources = extractor.extract(season, result)
+        print('[{}] Extractor done'.format(extractor_name))
+
+        return (season, extractor_sources)

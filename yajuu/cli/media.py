@@ -163,7 +163,7 @@ def _handle_media_download(media, queries):
     for orchestrator in orchestrators:
         sources = orchestrator.extract()
 
-        print(':: Downloading anime "{}"'.format(
+        print('\n:: Downloading anime "{}"'.format(
             orchestrator.media.metadata['name']
         ))
 
@@ -232,7 +232,7 @@ def _handle_media_download(media, queries):
                     print('[SKIPPING] already downloaded')
                     continue
 
-                print('Downloading episode {} at {}p'.format(
+                print('\nDownloading episode {} at {}p'.format(
                     episode_number, source[0]
                 ))
 
