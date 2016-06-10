@@ -20,16 +20,19 @@ class Extractor(ABC):
 
     def _as_soup(
         self, url, method='get', params=None, data=None, json=None,
-        strip=False
+        cookies=None, strip=False
     ):
         '''Helper method to get an url as a beautifulsoup object.'''
 
         if params:
             url = url.format(params=urllib.parse.urlencode(params))
 
-        if method == 'post' or data or json:
-            kwargs = {}
+        kwargs = {}
 
+        if cookies:
+            kwargs['cookies'] = cookies
+
+        if method == 'post' or data or json:
             if data:
                 kwargs['data'] = data
             elif json:
@@ -37,7 +40,7 @@ class Extractor(ABC):
 
             source = requests.post(url, **kwargs).text
         elif method == 'get':
-            source = requests.get(url).text
+            source = requests.get(url, **kwargs).text
         else:
             raise ValueError('The method must be either get or post.')
 

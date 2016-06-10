@@ -16,6 +16,7 @@ from .utils import confirm
 from yajuu.extractors.anime.anime_orchestrator import AnimeOrchestrator
 from yajuu.extractors.anime.htvanime import HtvanimeExtractor
 from yajuu.extractors.anime.anime_haven import AnimeHavenExtractor
+from yajuu.extractors.anime.anime_chiby import AnimeChibyExtractor
 
 VALID_MEDIAS = ('anime',)
 
@@ -131,13 +132,14 @@ def _handle_media_download(media, queries):
     if not choice:
         sys.exit(0)
 
-    print('\n:: Preparing the extractors\n')
+    print('\n:: Preparing the extractors (please stay there)\n')
 
     orchestrators = []
 
     for anime, season in animes:
         orchestrator = AnimeOrchestrator(
-            [HtvanimeExtractor, AnimeHavenExtractor], anime, season
+            [HtvanimeExtractor, AnimeChibyExtractor, AnimeHavenExtractor],
+            anime, season
         )
 
         orchestrator.search()

@@ -4,6 +4,8 @@ website, that includes the stream quality and direct source.
 
 import urllib.parse
 import re
+import subprocess
+import shlex
 
 import requests
 from bs4 import BeautifulSoup
@@ -13,15 +15,30 @@ def unshorten(url):
     '''Will try to locate the correct unshortener by itself.'''
 
     unshorteners = {
-        'tiwi.kiwi': unshorten_tiwi_kiwi
+        'tiwi.kiwi': unshorten_tiwi_kiwi,
+        'www.solidfiles.com': unshorten_solidfiles,
+        'solidfiles.com': unshorten_solidfiles
     }
 
     netloc = urllib.parse.urlsplit(url).netloc
 
     if netloc in unshorteners:
-        return unshorteners[netloc]
+        return unshorteners[netloc](url)
 
     return None
+
+
+def get_quality(stream_url):
+    '''Using ffprobe, gets the given stream url quality.'''
+
+    command = [
+        'ffprobe', '-i', shlex.quote(stream_url), '-show_entries',
+        'stream=height', '-v', 'quiet', '-of', 'csv=p=0'
+    ]
+
+    raw_output = subprocess.check_output(command)
+
+    return int(''.join(x for x in raw_output.decode('utf-8') if x.isdigit()))
 
 
 def unshorten_tiwi_kiwi(url):
@@ -104,4 +121,13 @@ def unshorten_tiwi_kiwi(url):
             link = span.find('a').get('href')
             sources.append((quality, link))
 
+            break
+
     return sources
+
+
+def unshorten_solidfiles(url):
+    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    link = soup.find('a', {'id': 'download-btn'}).get('href')
+    returned = [(get_quality(link), link)]
+    return returned

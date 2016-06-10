@@ -1,3 +1,4 @@
+import concurrent.futures
 import urllib.parse
 import json
 
@@ -40,49 +41,64 @@ class HtvanimeExtractor(AnimeExtractor):
 
     def extract(self, season, result):
         base_url = (
-            'https://api.htvanime.com/api/v1/anime_episodes?anime_slug={}'
+            'http://api.htvanime.com/api/v1/anime_episodes?anime_slug={}'
         )
 
         response = requests.get(base_url.format(result[1])).json()
 
         sources = {}
 
-        for episode in sorted(response['data'], key=lambda x: x['slug']):
-            retries = 0
-            success = False
-            episode_response = None
+        with concurrent.futures.ThreadPoolExecutor(16) as executor:
+            for episode_number, _sources in filter(
+                lambda x: x,  # Filter out the None values
+                executor.map(self.map_sources, response['data'])
+            ):
+                if episode_number not in sources:
+                    sources[episode_number] = []
 
-            while retries < 5 and not success:
-                url = (
-                    'https://api.htvanime.com/api/v1/anime_episode_videos/?'
-                    'anime_episode_slug={}'
-                ).format(episode['slug'])
-
-                try:
-                    episode_response = requests.get(url).json()
-                    break
-                except json.decoder.JSONDecodeError:
-                    retries += 1
-
-            # TODO: special episodes
-            if not episode['episode_number']:
-                continue
-
-            episode_number = int(episode['episode_number'])
-            print('[Htvanime] Processing episode {}'.format(episode_number))
-
-            if episode_number not in sources:
-                sources[episode_number] = []
-
-            for source in episode_response:
-                sources[episode_number].append((
-                    int(''.join(x for x in source['quality'] if x.isdigit())),
-                    source['url']
-                ))
-
-        for episode_number, episode_sources in sources.items():
-            sources[episode_number] = sorted(
-                episode_sources, key=lambda x: x[0]
-            )
+                sources[episode_number] += _sources
 
         return sources
+
+    def map_sources(self, episode):
+        retries = 0
+        success = False
+        episode_response = None
+
+        while retries < 10 and not success:
+            url = (
+                'http://api.htvanime.com/api/v1/anime_episode_videos/?'
+                'anime_episode_slug={}'
+            ).format(episode['slug'])
+
+            try:
+                # We have a lot of 500 errors there..
+                episode_response = requests.get(url, timeout=3).json()
+
+                if episode_response is not None:
+                    break
+                else:
+                    retries += 1
+            except (
+                json.decoder.JSONDecodeError,
+                requests.exceptions.ReadTimeout
+            ):
+                retries += 1
+                print('-> retry::({})'.format(retries))
+
+        # TODO: special episodes
+        if not episode['episode_number']:
+            return None
+
+        episode_number = int(episode['episode_number'])
+        print('[Htvanime] Processing episode {}'.format(episode_number))
+
+        _sources = []
+
+        for source in episode_response:
+            _sources.append((
+                int(''.join(x for x in source['quality'] if x.isdigit())),
+                source['url']
+            ))
+
+        return (episode_number, _sources)
