@@ -103,9 +103,12 @@ class AnimeChibyExtractor(AnimeExtractor):
 
         input_title, link = data
 
-        episode_number = int(''.join(
-            c for c in input_title if c.isdigit()
-        ))
+        try:
+            episode_number = int(''.join(
+                c for c in input_title if c.isdigit()
+            ))
+        except ValueError:
+            return
 
         print('[AnimeChiby] Processing episode {}'.format(
             episode_number
