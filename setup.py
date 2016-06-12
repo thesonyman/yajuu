@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 __version__ = '0.2.0'
@@ -8,7 +8,7 @@ with open('README.rst', 'rb') as f:
 
 setup(
     name='yajuu',
-    packages=['yajuu'],
+    packages=find_packages(),
     entry_points={
         'console_scripts': ['yajuu=yajuu.yajuu:main']
     },
