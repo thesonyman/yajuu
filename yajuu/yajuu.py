@@ -2,6 +2,7 @@
 
 Usage:
     yajuu media list <media>
+    yajuu media repair <media>
     yajuu media download <media> (<names> ...) [--seasons=<seasons>]
     yajuu (-h | --help)
     yajuu --version

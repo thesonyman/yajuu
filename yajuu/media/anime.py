@@ -28,10 +28,11 @@ class Anime(SeasonMedia):
                 **self.metadata
             )
 
-    def __init__(self, query):
+    def __init__(self, query, select_result=None):
         if Anime._db is None:
             Anime._db = api.TVDB(config['thetvdb']['api_key'])
 
+        self.select_result = select_result
         super().__init__(query)
 
     def __eq__(self, other):
@@ -58,23 +59,26 @@ class Anime(SeasonMedia):
             elif len(results) == 1:
                 show = results[0]
             else:
-                show = None
+                if self.select_result is None:
+                    show = None
 
-                print('Search results for {} :'.format(query))
+                    print('Search results for {} :'.format(query))
 
-                for index, result in enumerate(results):
-                    print('{} - {}'.format(index, result.SeriesName))
+                    for index, result in enumerate(results):
+                        print('{} - {}'.format(index, result.SeriesName))
 
-                print('Please select the correct result.')
+                    print('Please select the correct result.')
 
-                while not show:
-                    index = input('>> ')
+                    while not show:
+                        index = input('>> ')
 
-                    try:
-                        index = int(index)
-                        show = results[index]
-                    except (ValueError, IndexError):
-                        pass
+                        try:
+                            index = int(index)
+                            show = results[index]
+                        except (ValueError, IndexError):
+                            pass
+                else:
+                    show = self.select_result(query, results)
 
             # Fetch the metadata
             show.update()

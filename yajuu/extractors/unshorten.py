@@ -17,6 +17,7 @@ def unshorten(url):
     unshorteners = {
         'tiwi.kiwi': unshorten_tiwi_kiwi,
         'www.solidfiles.com': unshorten_solidfiles,
+        'vidstream.io': unshorten_vidstream,
         'solidfiles.com': unshorten_solidfiles
     }
 
@@ -28,12 +29,14 @@ def unshorten(url):
     return None
 
 
-def get_quality(stream_url):
+def get_quality(stream_url, quote=True):
     '''Using ffprobe, gets the given stream url quality.'''
 
+    path = shlex.quote(stream_url) if quote else stream_url
+
     command = [
-        'ffprobe', '-i', shlex.quote(stream_url), '-show_entries',
-        'stream=height', '-v', 'quiet', '-of', 'csv=p=0'
+        'ffprobe', '-i', path, '-show_entries', 'stream=height', '-v', 'quiet',
+        '-of', 'csv=p=0'
     ]
 
     raw_output = subprocess.check_output(command)
@@ -131,3 +134,19 @@ def unshorten_solidfiles(url):
     link = soup.find('a', {'id': 'download-btn'}).get('href')
     returned = [(get_quality(link), link)]
     return returned
+
+
+def unshorten_vidstream(url):
+    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+
+    quality_regex = re.compile(r'Download \((\d+)P - .+')
+
+    sources = []
+
+    for link in soup.select('.mirror_link a'):
+        sources.append((
+            int(quality_regex.search(link.text).group(1)),
+            link.get('href')
+        ))
+
+    return sources

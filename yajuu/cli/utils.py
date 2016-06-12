@@ -1,3 +1,6 @@
+import difflib
+
+
 def confirm(message, default=True):
     choice = None
 
@@ -55,3 +58,13 @@ def select(message, data):
             choice = data[index]
 
     return choice
+
+
+def select_best_result(query, results):
+    return sorted(
+        results,
+        key=lambda x: difflib.SequenceMatcher(
+            a=query.lower(), b=x.SeriesName.lower()
+        ).ratio(),
+        reverse=True  # Better first
+    )[0]
