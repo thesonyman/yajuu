@@ -67,5 +67,7 @@ if os.path.exists(config_path):
 else:
     config = DEFAULT_CONFIG
 
-    with open(config_path, 'w') as file:
+    os.makedirs(os.path.dirname(config_path))
+
+    with open(config_path, 'w+') as file:
         file.write(yaml.dump(config, default_flow_style=False))
