@@ -1,0 +1,9 @@
+beautifulsoup4==4.4.1
+bs4==0.0.1
+click==6.6
+click-log==0.1.4
+httplib2==0.9.2
+pytvdbapi==0.5.0
+PyYAML==3.11
+requests==2.10.0
+unshortenit==0.3.0

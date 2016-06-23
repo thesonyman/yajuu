@@ -1,43 +1,23 @@
-'''Yajuu is an automated media downloader.
+import click
 
-Usage:
-    yajuu media list <media>
-    yajuu media repair <media>
-    yajuu media download <media> (<names> ...) [--seasons=<seasons>]
-    yajuu (-h | --help)
-    yajuu --version
+from .cli import download
+from .media import Anime
 
-Options:
-    -s, --seasons=<seasons> String that tell which seasons to download.
-                            Separate the medias using comas. For 'A', 'B' you
-                            could pass -s '1, 1'. Pass -1 to target all the
-                            seasons.
-'''
-
-import pkg_resources
-from docopt import docopt
-
-from .cli import handle_media_cli
+MEDIA_TYPES = {
+    'anime': Anime
+}
 
 
-__version__ = pkg_resources.require('yajuu')[0].version
+@click.group()
+@click.option(
+    '--media-type', type=click.Choice(MEDIA_TYPES.keys()), default='anime'
+)
+@click.pass_context
+def cli(ctx, media_type):
+    ctx.obj['MEDIA_TYPE'] = MEDIA_TYPES[media_type]
+
+cli.add_command(download)
 
 
 def main():
-    ensure_config_directory()
-    handle_cli()
-
-
-def handle_cli():
-    """Will call submodules in the cli package if needed."""
-
-    arguments = docopt(__doc__)
-
-    if arguments['--version']:
-        print('Yajuu {}'.format(__version__))
-    elif arguments['media']:
-        handle_media_cli(arguments)
-
-
-def ensure_config_directory():
-    pass
+    cli(obj={})
