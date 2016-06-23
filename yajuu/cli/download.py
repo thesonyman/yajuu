@@ -4,6 +4,7 @@ import logging
 
 import click
 import inquirer
+import pytvdbapi
 
 from yajuu.media import Media
 
@@ -40,6 +41,9 @@ def validate_media(context, param, values):
             raise click.BadParameter('the media {} was not found'.format(
                 query
             ))
+        except pytvdbapi.error.ConnectionError:
+            logger.error('You\'re not connected to any network.')
+            sys.exit(1)
 
         try:
             # Map the seasons to a list of integers.
