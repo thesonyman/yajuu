@@ -1,15 +1,19 @@
-import click
 import sys
 import re
+import logging
+
+import click
 import inquirer
 
 from yajuu.media import Media
+
+logger = logging.getLogger(__name__)
 
 
 def validate_media(context, param, values):
     '''Validates, formats and get from the web the passed medias'''
 
-    print('Getting the required metadata..')
+    logger.info('Getting the required metadata..')
 
     if len(values) <= 0:
         raise click.BadParameter('no media was specified')
@@ -83,4 +87,4 @@ def select_media(name, results):
 @click.command()
 @click.option('--media', callback=validate_media, multiple=True)
 def download(media):
-    click.echo(str(media))
+    logger.debug(media)
