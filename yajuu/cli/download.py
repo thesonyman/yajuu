@@ -3,7 +3,7 @@ import sys
 import re
 import inquirer
 
-from yajuu.media import Anime, Media
+from yajuu.media import Media
 
 
 def validate_media(context, param, values):
@@ -29,7 +29,9 @@ def validate_media(context, param, values):
         query = parts[0].strip()
 
         try:
-            media = Anime(query, select_result=select_media)
+            media = context.obj['MEDIA_TYPE'](
+                query, select_result=select_media
+            )
         except Media.MediaNotFoundException:
             raise click.BadParameter('the media {} was not found'.format(
                 query
