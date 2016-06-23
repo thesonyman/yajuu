@@ -1,4 +1,5 @@
 import concurrent.futures
+import difflib
 
 from .orchestrator import Orchestrator
 
@@ -18,24 +19,37 @@ class SeasonOrchestrator(Orchestrator):
 
         return _extractors
 
-    def search(self):
+    def search(self, select_result=None):
         for season in self._seasons:
             extractors = self._extractors[season].copy()
 
             for extractor in extractors:
-                result = self._select_result(extractor, (
+                select_method = (
+                    self._select_result if not select_result else select_result
+                )
+
+                query = self.media.metadata['name'].lower()
+
+                # Sort the results by similarity with the media name
+                results = sorted(
+                    extractor.search(),
+                    key=lambda x: difflib.SequenceMatcher(
+                        a=query, b=x[0].lower()
+                    ).ratio(),
+                    reverse=True  # Better first
+                )
+
+                result = select_method(extractor, query, (
                     'Please select the correct result for the media "{}", '
                     'season {}'.format(
                         self.media.metadata['name'], season
                     )
-                ))
+                ), results)
 
                 if result:
                     self._extractors[season][extractor] = result
                 else:
                     del self._extractors[season][extractor]
-
-                print('')
 
         self.searched = True
 

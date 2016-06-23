@@ -66,26 +66,6 @@ def validate_media(context, param, values):
 
     return medias
 
-
-def select_media(name, results):
-    question = inquirer.List('name',
-        message="Which title is correct for input '{}'?".format(name),
-        choices=list(x.SeriesName for x in results)
-    )
-
-    answers = inquirer.prompt([question])
-
-    # If the user aborted
-    if not answers:
-        sys.exit(0)
-
-    for result in results:
-        if result.SeriesName == answers['name']:
-            return result
-
-    return None
-
-
 @click.command()
 @click.pass_context
 @click.option(
@@ -132,7 +112,11 @@ def download(ctx, media, skip_confirmation):
         logger.debug('Skipping the confirmation.')
 
     # Second step: create the orchestrators. They handle the difficult part:
-    # creating the extractors and executing them using threads.
+    # creating the extractors and executing them using threads. We will search
+    # on all the orchestrators before downloading anything, that way we'll be
+    # able to stop requesting informations from the user.
+    orchestrators = []
+
     for media, seasons in medias:
         orchestrator = ctx.obj['ORCHESTRATOR_CLASS'](media, seasons)
 
@@ -140,3 +124,58 @@ def download(ctx, media, skip_confirmation):
             media.metadata['name'], 's' if len(seasons) > 1 else '',
             ', '.join(str(s) for s in seasons)
         ))
+
+        # The object holds the data automatically
+        orchestrator.search(select_result=select_result)
+
+        orchestrators.append((media, seasons, orchestrator))
+
+    logger.debug(orchestrators)
+
+def select_media(name, results):
+    question = inquirer.List('name',
+        message="Which title is correct for input '{}'?".format(name),
+        choices=list(x.SeriesName for x in results)
+    )
+
+    answers = inquirer.prompt([question])
+
+    # If the user aborted
+    if not answers:
+        sys.exit(0)
+
+    for result in results:
+        if result.SeriesName == answers['name']:
+            return result
+
+    return None
+
+def select_result(extractor, query, message, results):
+    extractor_name = type(extractor).__name__
+
+    logger.debug('{} found {}'.format(extractor_name, results))
+
+    results = results[:20]
+
+    if len(results)  <= 0:
+        logger.debug('The extractor {} did not find any results.'.format(
+            extractor_name
+        ))
+
+        return None
+
+    question = inquirer.List('result',
+        message=message,
+        choices=list(x[0] for x in results)
+    )
+
+    answers = inquirer.prompt([question])
+
+    if not answers or not answers['result']:
+        return None
+
+    for result in results:
+        if result[0] == answers['result']:
+            return result
+
+    return None
