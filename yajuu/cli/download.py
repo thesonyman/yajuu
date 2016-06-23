@@ -32,7 +32,7 @@ def validate_media(context, param, values):
         query = parts[0].strip()
 
         try:
-            media = context.obj['MEDIA_TYPE'](
+            media = context.obj['MEDIA_CLASS'](
                 query, select_result=select_media
             )
         except Media.MediaNotFoundException:
@@ -62,7 +62,7 @@ def validate_media(context, param, values):
                 )
             )
 
-        medias.append((media, seasons))
+        medias.append([media, seasons])
 
     return medias
 
@@ -87,6 +87,7 @@ def select_media(name, results):
 
 
 @click.command()
+@click.pass_context
 @click.option(
     '--media', callback=validate_media, multiple=True, required=True,
     help='Add a media to download, the string must respect the format "Name '
@@ -97,7 +98,7 @@ def select_media(name, results):
     '--skip-confirmation', is_flag=True, help='Skip the first confirmation, '
     'however you will still need to select the correct results'
 )
-def download(media, skip_confirmation):
+def download(ctx, media, skip_confirmation):
     # Since we can't change the name
     medias = media
     del media
@@ -129,3 +130,13 @@ def download(media, skip_confirmation):
             sys.exit(0)
     else:
         logger.debug('Skipping the confirmation.')
+
+    # Second step: create the orchestrators. They handle the difficult part:
+    # creating the extractors and executing them using threads.
+    for media, seasons in medias:
+        orchestrator = ctx.obj['ORCHESTRATOR_CLASS'](media, seasons)
+
+        logger.debug('Searching for "{}", season{} {}.'.format(
+            media.metadata['name'], 's' if len(seasons) > 1 else '',
+            ', '.join(str(s) for s in seasons)
+        ))

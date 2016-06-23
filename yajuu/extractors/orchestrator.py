@@ -2,7 +2,7 @@ import difflib
 from abc import ABC, abstractmethod
 import concurrent.futures
 
-from yajuu.cli.utils import select
+from yajuu._cli.utils import select
 
 
 class Orchestrator(ABC):
@@ -10,10 +10,16 @@ class Orchestrator(ABC):
         'Can\'t extract before searching. Please call the search method.'
     )
 
-    def __init__(self, extractors, media):
+    def __init__(self, media, extractors=None):
         self.media = media
         self.searched = False
-        self._extractors = self._create_extractors(extractors)
+
+        if extractors == None:
+            self._extractors = self._create_extractors(
+                self._get_default_extractors()
+            )
+        else:
+            self._extractors = self._create_extractors(extractors)
 
     def _create_extractors(self, extractors):
         return dict((x(self.media), None) for x in extractors)
@@ -80,3 +86,6 @@ class Orchestrator(ABC):
         print('[{}] Extractor done'.format(extractor_name))
 
         return extractor_sources
+
+    def _get_default_extractors(self):
+        return []

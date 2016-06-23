@@ -4,9 +4,9 @@ from .orchestrator import Orchestrator
 
 
 class SeasonOrchestrator(Orchestrator):
-    def __init__(self, extractors, media, seasons):
+    def __init__(self, media, seasons, extractors=None):
         self._seasons = seasons
-        super().__init__(extractors, media)
+        super().__init__(media, extractors=extractors)
 
     def _create_extractors(self, extractors):
         _extractors = {}
