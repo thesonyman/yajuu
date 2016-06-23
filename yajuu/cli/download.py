@@ -5,6 +5,7 @@ import logging
 import click
 import inquirer
 import pytvdbapi
+import tabulate
 
 from yajuu.media import Media
 
@@ -15,9 +16,6 @@ def validate_media(context, param, values):
     '''Validates, formats and get from the web the passed medias'''
 
     logger.info('Getting the required metadata..')
-
-    if len(values) <= 0:
-        raise click.BadParameter('no media was specified')
 
     medias = []
 
@@ -89,6 +87,45 @@ def select_media(name, results):
 
 
 @click.command()
-@click.option('--media', callback=validate_media, multiple=True)
-def download(media):
-    logger.debug(media)
+@click.option(
+    '--media', callback=validate_media, multiple=True, required=True,
+    help='Add a media to download, the string must respect the format "Name '
+    'season[s] s,..". Eg: "Code Geass" seasons 1,2. The option can be passed '
+    'multiple times.'
+)
+@click.option(
+    '--skip-confirmation', is_flag=True, help='Skip the first confirmation, '
+    'however you will still need to select the correct results'
+)
+def download(media, skip_confirmation):
+    # Since we can't change the name
+    medias = media
+    del media
+
+    # First, we print out the medias that will be downloaded, so that the user
+    # can confirm them.
+    logger.info('\nMedias to download now: ')
+
+    # Generate a list similar to the medias list, only the first variable fo
+    # each element is the name of the media, and the second is a list of all
+    # the seasons formatted as a string.
+    to_download = [
+        (media.metadata['name'], ', '.join(str(season) for season in seasons))
+        for media, seasons in medias
+    ]
+
+    logger.info(tabulate.tabulate(
+        to_download, headers=['Name', 'Season(s)'], tablefmt='psql'
+    ) + '\n')
+
+    if not skip_confirmation:
+        confirm_question = inquirer.Confirm(
+            'continue', message='Do you wish to start the downloads?',
+            default=True
+        )
+
+        if not inquirer.prompt([confirm_question])['continue']:
+            logger.debug('Exiting program')
+            sys.exit(0)
+    else:
+        logger.debug('Skipping the confirmation.')
