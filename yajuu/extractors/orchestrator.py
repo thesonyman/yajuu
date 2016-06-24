@@ -2,7 +2,7 @@ import difflib
 from abc import ABC, abstractmethod
 import concurrent.futures
 
-from yajuu.cli.utils import select
+from yajuu._cli.utils import select
 
 
 class Orchestrator(ABC):
@@ -10,23 +10,44 @@ class Orchestrator(ABC):
         'Can\'t extract before searching. Please call the search method.'
     )
 
-    def __init__(self, extractors, media):
+    def __init__(self, media, extractors=None):
         self.media = media
         self.searched = False
-        self._extractors = self._create_extractors(extractors)
+
+        if extractors == None:
+            self._extractors = self._create_extractors(
+                self._get_default_extractors()
+            )
+        else:
+            self._extractors = self._create_extractors(extractors)
 
     def _create_extractors(self, extractors):
         return dict((x(self.media), None) for x in extractors)
 
-    def search(self):
+    def search(self, select_result=None):
         extractors = self._extractors.copy()
 
         for extractor in extractors:
-            result = self._select_result(extractor, (
+            select_method = (
+                self._select_result if not select_result else select_result
+            )
+
+            query = self.media.metadata['name'].lower()
+
+            # Sort the results by similarity with the media name
+            results = sorted(
+                extractor.search(),
+                key=lambda x: difflib.SequenceMatcher(
+                    a=query, b=x[0].lower()
+                ).ratio(),
+                reverse=True  # Better first
+            )
+
+            result = select_result(extractor, query, (
                 'Please select the correct result for the media "{}"'.format(
                     self.media.metadata['name']
                 )
-            ))
+            ), results)
 
             if result:
                 self._extractors[extractor] = result
@@ -37,19 +58,8 @@ class Orchestrator(ABC):
 
         self.searched = True
 
-    def _select_result(self, extractor, message):
-        query = self.media.metadata['name'].lower()
-
-        # Sort the results by similarity with the media name
-        results = sorted(
-            extractor.search(),
-            key=lambda x: difflib.SequenceMatcher(
-                a=query, b=x[0].lower()
-            ).ratio(),
-            reverse=True  # Better first
-        )
-
-        # And get the correct result
+    def _select_result(self, extractor, query, message, results):
+        # Get the correct result
         return select(message, results)
 
     def extract(self):
@@ -80,3 +90,6 @@ class Orchestrator(ABC):
         print('[{}] Extractor done'.format(extractor_name))
 
         return extractor_sources
+
+    def _get_default_extractors(self):
+        return []
