@@ -8,7 +8,7 @@ import click
 
 DEFAULT_CONFIG = {
     'thetvdb': {
-        'api_key': '',
+        'api_key': '34FF6CE86D796A6D',
         'language': 'en'
     },
     'media': {
