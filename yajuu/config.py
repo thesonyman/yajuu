@@ -3,6 +3,8 @@
 import os
 import yaml
 
+import click
+
 
 DEFAULT_CONFIG = {
     'thetvdb': {
@@ -35,7 +37,7 @@ DEFAULT_CONFIG = {
     }
 }
 
-config_path = os.path.expanduser('~/.config/yajuu/config.yaml')
+config_path = os.path.join(click.get_app_dir('yajuu'), 'config.yaml')
 
 
 def check_config(expected, given):
