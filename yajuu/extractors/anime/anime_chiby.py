@@ -1,10 +1,28 @@
 import re
+import copy
+import time
+import json
 import concurrent.futures
 
-import unshortenit
+import requests
 
 from .anime_extractor import AnimeExtractor
 from ..unshorten import unshorten
+
+HTTP_HEADER = {
+    'User-Agent': (
+        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like '
+        'Gecko) Chrome/47.0.2526.111 Safari/537.36'
+    ),
+    'Accept': (
+        'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    ),
+    'Accept-Encoding': 'gzip,deflate,sdch',
+    'Connection': 'keep-alive',
+    'Accept-Language': 'nl-NL,nl;q=0.8,en-US;q=0.6,en;q=0.4',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache'
+}
 
 
 class AnimeChibyExtractor(AnimeExtractor):
@@ -21,7 +39,7 @@ class AnimeChibyExtractor(AnimeExtractor):
         # Well, the website uses window.open instead of href, for no apparent
         # reason.
         onclick_regex = re.compile(
-            r'window\.open\([\'|\"](.+)[\'|\"]\);return false;'
+            r'window\.open\([\'|\'](.+)[\'|\']\);return false;'
         )
 
         results = []
@@ -48,6 +66,44 @@ class AnimeChibyExtractor(AnimeExtractor):
 
         return results
 
+    def _unshorten(self, link):
+        request = requests.get(link, headers=HTTP_HEADER)
+
+        session_id = re.findall(r'sessionId\:(.*?)\"\,', request.text)
+
+        if len(session_id) < 0:
+            return
+
+        session_id = re.sub(r'\s\"', '', session_id[0])
+
+        http_header = copy.copy(HTTP_HEADER)
+        http_header['Content-Type'] = 'application/x-www-form-urlencoded'
+        http_header['Host'] = 'sh.st'
+        http_header['Referer'] = link
+        http_header['Origin'] = 'http://sh.st'
+        http_header['X-Requested-With'] = 'XMLHttpRequest'
+
+        time.sleep(5)
+
+        payload = {'adSessionId': session_id, 'callback': 'c'}
+
+        request = requests.get(
+            'http://sh.st/shortest-url/end-adsession',
+            params=payload, headers=http_header
+        )
+
+        response = request.content[6:-2].decode('utf-8')
+
+        if request.status_code != 200:
+            return
+
+        resp_uri = json.loads(response)['destinationUrl']
+
+        if resp_uri is None:
+            return
+
+        return resp_uri
+
     def extract(self, season, result):
         sources = {}
 
@@ -72,7 +128,7 @@ class AnimeChibyExtractor(AnimeExtractor):
                 else:
                     # In the second case, we don't need to input title. However
                     # we need to get real links.
-                    soup = self._as_soup(unshortenit.unshorten(link)[0])
+                    soup = self._as_soup(self._unshorten(link))
                     second_case_links += soup.select('td a[target="_BLANK"]')
 
             first_case_sources = list(executor.map(
@@ -142,9 +198,9 @@ class AnimeChibyExtractor(AnimeExtractor):
         ))
 
         # The links are shortened there too..
-        episode_link = unshortenit.unshorten(
+        episode_link = self._unshorten(
             episode_link.get('href')
-        )[0]
+        )
 
         _sources = unshorten(episode_link)
 
