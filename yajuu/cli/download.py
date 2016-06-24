@@ -1,13 +1,19 @@
 import sys
+import os
 import re
+import xml.dom.minidom
+import glob
 import logging
 
 import click
+import shlex
+import requests
 import inquirer
 import pytvdbapi
 import tabulate
 
 from yajuu.media import Media
+from yajuu.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +138,52 @@ def download(ctx, media, skip_confirmation):
 
     logger.debug(orchestrators)
 
+    logger.info(
+        'Starting the downloads! The process is completely automatic by now, '
+        'you can let it run in the background.'
+    )
+
+    # The specific media type configuration section
+    media_config = config['paths']['medias'][ctx.obj['MEDIA_TYPE']]
+
+    # Specific path for the provided media type
+    medias_path = os.path.join(config['paths']['base'], media_config['base'])
+
+    for media, seasons, orchestrator in orchestrators:
+        media_path = os.path.join(medias_path, media.metadata['name'])
+
+        logger.info('-> Starting downloads for media {}'.format(
+            media.metadata['name']
+        ))
+
+        logger.info('Starting the extract phase')
+
+        media_sources = orchestrator.extract()
+
+        logger.debug('The extract is done')
+
+        for season, season_sources in media_sources.items():
+            season_path = os.path.join(
+                media_path,
+                media_config['season'].format(
+                    season_number=season
+                )
+            )
+
+            if not os.path.exists(season_path):
+                logger.debug('Creating path {}'.format(season_path))
+                os.makedirs(season_path)
+            else:
+                logger.debug('The path {} already exists'.format(season_path))
+
+            logger.info('Downloading season {}'.format(season))
+
+            for episode_number, sources in season_sources.items():
+                download_episode(
+                    media, media_config, season, season_path, episode_number,
+                    sources
+                )
+
 def select_media(name, results):
     question = inquirer.List('name',
         message="Which title is correct for input '{}'?".format(name),
@@ -179,3 +231,99 @@ def select_result(extractor, query, message, results):
             return result
 
     return None
+
+def filter_quality(source):
+    minimum_quality = config['media']['minimum_quality']
+    maximum_quality = config['media']['maximum_quality']
+
+    quality = source[0]
+
+    if quality < minimum_quality:
+        return False
+    elif maximum_quality > 0 and quality > maximum_quality:
+        return False
+
+    return True
+
+def download_episode(
+    media, media_config, season, season_path, episode_number, sources
+):
+    '''Since 4 nested for loops is pretty hard to read, we separate the logic
+    to download an episode in another episode.'''
+
+    logger.info('Downloading episode {}'.format(episode_number))
+
+    sources = list(filter(filter_quality, sources))
+    logger.debug('Correct sources: {}'.format(sources))
+
+    if len(sources) <= 0:
+        logger.warning('No valid sources were found.')
+        return
+
+    path_params = {
+        'anime_name': media.metadata['name'],
+        'season_number': season,
+        'episode_number': episode_number
+    }
+
+    episode_format = media_config['episode']
+
+    if len(glob.glob(episode_format.format(**path_params, ext='*'))) > 0:
+        logger.info('A file already exists, skipping!')
+        return
+
+    downloaded = False
+
+    for quality, url in sorted(sources, reverse=True):
+        logger.info('Trying quality {}'.format(quality))
+
+        episode_name = episode_format.format(**path_params, ext='mp4')
+
+        episode_path = os.path.join(
+            season_path,
+            episode_name
+        )
+
+        command = config['misc']['downloader'].format(
+            dirname=shlex.quote(season_path),
+            filename=shlex.quote(episode_name),
+            filepath=shlex.quote(episode_path),
+            url=shlex.quote(url)
+        )
+
+        logger.debug(command)
+
+        if os.system(command) == 0:
+            logger.debug('The download succeeded.')
+            downloaded = True
+            break
+        else:
+            logger.warning('The download failed')
+
+    if not downloaded:
+        logger.error('No download succeeded.')
+    elif config['plex_reload']['enabled']:
+        base_plex_url = 'http://{}:{}/library/sections'.format(
+            config['plex_reload']['host'], str(config['plex_reload']['port'])
+        )
+
+        xml_sections = xml.dom.minidom.parseString(
+            requests.get(base_plex_url).text
+        ).getElementsByTagName('Directory')
+
+        for section in xml_sections:
+            section_title = section.getAttribute('title')
+
+            logger.debug('Plex: discovered section {}'.format(section_title))
+
+            if section_title not in config['plex_reload']['sections']:
+                continue
+
+            logger.debug('Plex: reloading section {}'.format(section_title))
+
+            key = section.getAttribute('key')
+            requests.get(base_plex_url + key + '/refresh')
+    else:
+        logger.debug('Plex: the reloader is disabled')
+
+    logger.info('')

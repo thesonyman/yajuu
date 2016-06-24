@@ -24,6 +24,7 @@ MEDIA_TYPES = {
 @click_log.init('yajuu')
 @click.pass_context
 def cli(ctx, media_type):
+    ctx.obj['MEDIA_TYPE'] = media_type
     ctx.obj['MEDIA_CLASS'] = MEDIA_TYPES[media_type][0]
     ctx.obj['ORCHESTRATOR_CLASS'] = MEDIA_TYPES[media_type][1]
 
