@@ -1,9 +1,9 @@
 from .. import SeasonOrchestrator
 
-from yajuu.extractors.anime.anime_chiby import AnimeChibyExtractor
-from .anime_haven import AnimeHavenExtractor
-from .gogoanime_io import GogoAnimeIoExtractor
-from .htvanime import HtvanimeExtractor
+from yajuu.extractors import (
+	AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
+	HtvanimeExtractor, KissAnimeExtractor
+)
 
 
 class AnimeOrchestrator(SeasonOrchestrator):
@@ -11,7 +11,8 @@ class AnimeOrchestrator(SeasonOrchestrator):
         return self.media.metadata['name']
 
     def _get_default_extractors(self):
-        return [
-            AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
-            HtvanimeExtractor
-        ]
+    	return [KissAnimeExtractor]
+        #return [
+        #    AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
+        #    HtvanimeExtractor
+        #]
