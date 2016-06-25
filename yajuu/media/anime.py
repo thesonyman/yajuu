@@ -5,7 +5,7 @@ import os
 from pytvdbapi import api
 from pytvdbapi.error import TVDBIndexError
 
-from .season_media import SeasonMedia
+from . import SeasonMedia
 from yajuu.config import config
 
 

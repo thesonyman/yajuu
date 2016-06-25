@@ -1,7 +1,7 @@
 import concurrent.futures
 import difflib
 
-from .orchestrator import Orchestrator
+from . import Orchestrator
 
 
 class SeasonOrchestrator(Orchestrator):

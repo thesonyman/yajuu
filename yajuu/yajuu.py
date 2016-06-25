@@ -5,7 +5,7 @@ import click_log
 
 from .cli import download
 from .media import Anime
-from .extractors import AnimeOrchestrator
+from .orchestrators import AnimeOrchestrator
 
 # Use 'yajuu' instead of __name__, because since __name__ is 'yajuu.yajuu', the
 # sub-packages won't be affected by the configuration.

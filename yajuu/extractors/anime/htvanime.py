@@ -4,7 +4,7 @@ import json
 
 import requests
 
-from .anime_extractor import AnimeExtractor
+from . import AnimeExtractor
 
 
 class HtvanimeExtractor(AnimeExtractor):
