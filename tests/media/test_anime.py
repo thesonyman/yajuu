@@ -1,6 +1,5 @@
 from unittest import TestCase
 import mock
-from contextlib import redirect_stdout
 
 from yajuu.media import Anime
 
@@ -18,6 +17,5 @@ class AnimeTestcase(TestCase):
         )
 
     def test_select(self):
-        with redirect_stdout(None), \
-             mock.patch('builtins.input', return_value='0'):
+        with mock.patch('builtins.input', return_value='0'):
             Anime('code')
