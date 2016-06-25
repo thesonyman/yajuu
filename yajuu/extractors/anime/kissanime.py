@@ -1,5 +1,6 @@
 import re
 import time
+import base64
 import concurrent.futures
 
 import cfscrape
@@ -110,4 +111,40 @@ class KissAnimeExtractor(AnimeExtractor):
 		return results
 
 	def extract(self, season, result):
-		return []
+		soup = self._as_soup(result[1], method='get')
+
+		sources = {}
+
+		links = soup.select('table a[href^="/Anime/"]')
+
+		with concurrent.futures.ThreadPoolExecutor(16) as executor:
+			for episode_number, extractor_sources in executor.map(
+				self.episode_worker,
+				soup.select('table a[href^="/Anime/"]')
+			):
+				if episode_number not in sources:
+					sources[episode_number] = []
+
+				sources[episode_number] += extractor_sources
+
+		return sources
+
+	def episode_worker(self, link):
+		url = 'https://kissanime.to' + link.get('href')
+		episode_number = int(self.EPISODE_REGEX.search(link.text).group(1))
+		print('[KissAnime] Processing episode {}'.format(episode_number))
+
+		episode_soup = self._as_soup(url, method='get')
+
+		quality_select = episode_soup.select('select#selectQuality')[0]
+
+		sources = []
+
+		for option in quality_select.select('option'):
+			quality = int(self.QUALITY_REGEX.search(option.text).group(1))
+			src = base64.b64decode(option.get('value')).decode('utf-8')
+			sources.append((quality, src))
+
+		print('[KissAnime] Done Processing episode {}'.format(episode_number))
+
+		return (episode_number, sources)
