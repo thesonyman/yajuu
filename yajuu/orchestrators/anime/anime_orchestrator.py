@@ -11,8 +11,7 @@ class AnimeOrchestrator(SeasonOrchestrator):
         return self.media.metadata['name']
 
     def _get_default_extractors(self):
-    	return [KissAnimeExtractor]
-        #return [
-        #    AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
-        #    HtvanimeExtractor
-        #]
+        return [
+            AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
+            HtvanimeExtractor, KissAnimeExtractor
+        ]
