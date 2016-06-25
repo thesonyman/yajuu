@@ -268,7 +268,7 @@ def download_episode(
 
     episode_format = media_config['episode']
 
-    if len(glob.glob(episode_format.format(**path_params, ext='*'))) > 0:
+    if len(glob.glob(episode_format.format(ext='*', **path_params))) > 0:
         logger.info('A file already exists, skipping!')
         return
 
