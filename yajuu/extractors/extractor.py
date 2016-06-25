@@ -41,12 +41,12 @@ class Extractor(metaclass=ABCMeta):
             elif json:
                 kwargs['json'] = json
 
-            if self.session:
+            if hasattr(self, 'session'):
                 source = self.session.post(url, **kwargs).text
             else:
                 source = requests.post(url, **kwargs).text
         elif method == 'get':
-            if self.session:
+            if hasattr(self, 'session'):
                 source = self.session.get(url, **kwargs).text
             else:
                 source = requests.get(url, **kwargs).text
