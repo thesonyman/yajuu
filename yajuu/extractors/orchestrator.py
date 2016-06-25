@@ -1,11 +1,11 @@
 import difflib
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 import concurrent.futures
 
 from yajuu._cli.utils import select
 
 
-class Orchestrator(ABC):
+class Orchestrator(metaclass=ABCMeta):
     NOT_SEARCHED_EXCEPTION = Exception(
         'Can\'t extract before searching. Please call the search method.'
     )

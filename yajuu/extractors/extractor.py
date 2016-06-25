@@ -1,11 +1,11 @@
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 import urllib.parse
 
 import requests
 from bs4 import BeautifulSoup
 
 
-class Extractor(ABC):
+class Extractor(metaclass=ABCMeta):
     def __init__(self, media):
         self.media = media
         self.links = []

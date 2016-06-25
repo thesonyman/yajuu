@@ -1,14 +1,14 @@
 '''Provides an implementation of the season media format, which includes
 seasons and episodes.'''
 
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from glob import glob
 
 from .media import Media
 
 
 class SeasonMedia(Media):
-    class Episode(ABC):
+    class Episode(metaclass=ABCMeta):
         def __init__(self, season_number, number):
             self.number = number
             self.season_number = season_number
