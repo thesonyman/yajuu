@@ -12,11 +12,6 @@ from . import AnimeExtractor
 
 
 class KissAnimeExtractor(AnimeExtractor):
-	TOKENS_REGEX = re.compile(
-		'var s,t,o,p,b,r,e,a,k,i,n,g,f, ([a-zA-Z]+)={"([a-zA-Z]+)":(.+)};'
-		'[.\s\S]+?;(.+);a.value'
-	)
-
 	EPISODE_REGEX = re.compile('.+ Episode (\d{3,})')
 
 	QUALITY_REGEX = re.compile('(\d{3,})p')
@@ -30,65 +25,9 @@ class KissAnimeExtractor(AnimeExtractor):
 			'Gecko) Chrome/41.0.2228.0 Safari/537.36'
 		)
 
-	def _check_browser(self):
-		'''The kissanime website does have an internal security, which asks you
-		to wait 5 seconds. We need to pass that.'''
-
-		response = self.session.get('https://kissanime.to')
-
-		if 'Please wait 5 seconds...' not in response.text:
-			return
-
-		soup = bs4.BeautifulSoup(response.text, 'html.parser')
-
-		# Okay, so the page uses javascript to compute a validation code. We
-		# can use a regex to extract the essential parts of the code, and then
-		# execute the parts hard to parse.
-
-		# First, get the variables necessary to run the javascript code
-		javascript_parts = self.TOKENS_REGEX.search(response.text)
-
-		object_name = javascript_parts.group(1)
-		object_key = javascript_parts.group(2)  # The sub-object (dict)
-		object_value = javascript_parts.group(3)
-		object_modifier = javascript_parts.group(4)  # The code hard to parse
-		domain_len = len('kissanime.to')
-
-		# Now we can generate a little bit of javascript to wrap the modifier
-		code = '''
-		(function() {
-			var {object_name} = {{ {object_key}: {object_value} }};
-			{object_modifier};
-			return parseInt({object_name}.{object_key} + {domain_len}, 10);
-		})()
-		'''.format(
-			object_name=object_name, object_key=object_key,
-			object_value=object_value, object_modifier=object_modifier,
-			domain_len=domain_len
-		)
-
-		# And execute it
-		jschl_answer = execjs.eval(code)
-
-		# Now we need to extract the other tokens, including the post url
-		submit_url = submit_url = soup.select(
-			'#challenge-form'
-		)[0].get('action')
-
-		payload = {
-			'jschl_answer': jschl_answer,
-			'jschl_vc': soup.select('input[name=jschl_vc]')[0].get('value'),
-			'pass': soup.select('input[name=pass]')[0].get('value')
-		}
-
-		# Before submitting the request, we need to sleep
-		time.sleep(4)
-
-		# And tada!
-		session.get('https://kissanime.to' + submit_url, params=payload)
-
 	def search(self):
-		self._check_browser()
+		# Preliminary, else kissanime returns 404
+		self.session.get('https://kissanime.to')
 
 		soup = self._as_soup(
 			'https://kissanime.to/Search/SearchSuggest',
@@ -118,10 +57,15 @@ class KissAnimeExtractor(AnimeExtractor):
 		links = soup.select('table a[href^="/Anime/"]')
 
 		with concurrent.futures.ThreadPoolExecutor(16) as executor:
-			for episode_number, extractor_sources in executor.map(
+			for returned in executor.map(
 				self.episode_worker,
 				soup.select('table a[href^="/Anime/"]')
 			):
+				if not returned:
+					continue
+
+				episode_number, extractor_sources = returned
+
 				if episode_number not in sources:
 					sources[episode_number] = []
 
@@ -131,10 +75,17 @@ class KissAnimeExtractor(AnimeExtractor):
 
 	def episode_worker(self, link):
 		url = 'https://kissanime.to' + link.get('href')
-		episode_number = int(self.EPISODE_REGEX.search(link.text).group(1))
+		episode_number_results = self.EPISODE_REGEX.search(link.text)
+
+		if not episode_number_results:
+			return None
+
+		episode_number = int(episode_number_results.group(1))
+
 		print('[KissAnime] Processing episode {}'.format(episode_number))
 
-		episode_soup = self._as_soup(url, method='get')
+		episode_response = self.session.get(url)
+		episode_soup = bs4.BeautifulSoup(episode_response, 'html.parser')
 
 		quality_select = episode_soup.select('select#selectQuality')[0]
 
