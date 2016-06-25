@@ -1,10 +1,10 @@
 '''Provides the base implementation of the media class, that defines the core
 behavior of all media.'''
 
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 
 
-class Media(ABC):
+class Media(metaclass=ABCMeta):
     class MediaNotFoundException(Exception):
         pass
 

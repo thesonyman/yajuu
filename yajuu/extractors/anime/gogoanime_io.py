@@ -2,8 +2,8 @@ import re
 import concurrent.futures
 import itertools
 
-from .anime_extractor import AnimeExtractor
-from ..unshorten import unshorten
+from . import AnimeExtractor
+from .. import unshorten
 
 
 class GogoAnimeIoExtractor(AnimeExtractor):

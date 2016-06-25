@@ -23,6 +23,12 @@ class DummySeasonMedia(SeasonMedia):
     def download(self):
         pass
 
+    def __eq__(self, other):
+                pass
+
+    def __ne__(self, other):
+        pass
+
 
 class MediaSeasonTestcase(TestCase):
     def test_abstract(self):

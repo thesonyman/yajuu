@@ -1,5 +1,7 @@
 # Yajuu: an automated media downloader
 
+[![Build Status](https://travis-ci.org/vivescere/yajuu.svg?branch=develop)](https://travis-ci.org/vivescere/yajuu)
+
 **This software is in beta. It only supports the download of anime for now. Music, movies and TV shows are to be added. No GUI is available for now, so you will have to use the CLI.**
 
 Yajuu, which stands for wild beast in Japanese, is a software that can help you in the fastidious task of downloading files from the internet. It search on known websites for what you want, asks you which result is correct and then proceed to download the medias. By default, it uses ```wget``` to download files, and follow [the plex recommendations](https://support.plex.tv/hc/en-us/categories/200028098-Media-Preparation) as of file naming conventions.

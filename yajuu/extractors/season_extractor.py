@@ -1,4 +1,4 @@
-from .extractor import Extractor
+from . import Extractor
 
 
 class SeasonExtractor(Extractor):

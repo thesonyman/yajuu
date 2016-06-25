@@ -6,8 +6,8 @@ import concurrent.futures
 
 import requests
 
-from .anime_extractor import AnimeExtractor
-from ..unshorten import unshorten
+from . import AnimeExtractor
+from .. import unshorten
 
 HTTP_HEADER = {
     'User-Agent': (

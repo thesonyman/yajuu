@@ -1,8 +1,8 @@
 import re
 import concurrent.futures
 
-from .anime_extractor import AnimeExtractor
-from ..unshorten import unshorten
+from . import AnimeExtractor
+from .. import unshorten
 
 
 class AnimeHavenExtractor(AnimeExtractor):

@@ -18,6 +18,12 @@ class MediaTestcase(TestCase):
             def download(self):
                 pass
 
+            def __eq__(self, other):
+                pass
+
+            def __ne__(self, other):
+                pass
+
         query = 'hello world'
         media = SimpleMedia(query)
         self.assertEqual(media.metadata, {'query': query})
