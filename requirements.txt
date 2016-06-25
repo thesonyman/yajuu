@@ -1,12 +1,16 @@
 beautifulsoup4==4.4.1
 blessings==1.6
 bs4==0.0.1
+cfscrape==1.6.4
 click==6.6
 click-log==0.1.4
 httplib2==0.9.2
 inquirer==2.1.7
+pbr==1.10.0
+PyExecJS==1.4.0
 pytvdbapi==0.5.0
 PyYAML==3.11
 readchar==0.7
 requests==2.10.0
+six==1.10.0
 tabulate==0.7.5
