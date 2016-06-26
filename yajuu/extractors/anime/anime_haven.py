@@ -1,6 +1,9 @@
 import re
 import concurrent.futures
 
+import requests
+from bs4 import BeautifulSoup
+
 from . import AnimeExtractor
 from .. import unshorten
 
@@ -9,15 +12,23 @@ class AnimeHavenExtractor(AnimeExtractor):
     PAGE_REGEX = re.compile(r'(http://.+/page/)([0-9]+)')
     EPISODE_REGEX = re.compile(r'http://.+-episode-([0-9]+)')
 
+    def _get_url(self):
+        return 'http://animehaven.org'
+
     def search(self):
-        soup = self._as_soup(
+        html = requests.post(
             'http://animehaven.org/wp-admin/admin-ajax.php',
             data={
                 'action': 'search_ajax',
                 'keyword': self.media.metadata['name']
-            },
-            strip=True
-        )
+            }
+        ).text
+
+        html = html.replace('\\n', '')
+        html = html.replace('\\t', '')
+        html = html.replace('\\', '')
+
+        soup = BeautifulSoup(html, 'html.parser')
 
         results = []
 
@@ -26,7 +37,7 @@ class AnimeHavenExtractor(AnimeExtractor):
             link = title_block.find('a')  # The first one is the good one
             title, href = link.get('title'), link.get('href')
 
-            versions_soup = self._as_soup(href)
+            versions_soup = self._get(href)
 
             versions = list(
                 ('Sub' if 'sub' in x.text.lower() else 'Dub', x.get('href'))
@@ -71,7 +82,7 @@ class AnimeHavenExtractor(AnimeExtractor):
     def page_worker(self, url):
         '''Extract the links to all the anime from the current page.'''
 
-        soup = self._as_soup(url)
+        soup = self._get(url)
 
         # The episodes are listed on each page as posts.
         episodes = soup.find_all('article', {'class': 'post'})
@@ -113,7 +124,7 @@ class AnimeHavenExtractor(AnimeExtractor):
         episode_number = int(episode_number_search.group(1))
         print('[AnimeHaven] Processing episode {}'.format(episode_number))
 
-        soup = self._as_soup(link)
+        soup = self._get(link)
 
         download_div = soup.find('div', {'class': 'download_feed_link'})
 

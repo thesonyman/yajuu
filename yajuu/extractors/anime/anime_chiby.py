@@ -26,8 +26,11 @@ HTTP_HEADER = {
 
 
 class AnimeChibyExtractor(AnimeExtractor):
+    def _get_url(self):
+        return 'http://www.animechiby.com'
+
     def search(self):
-        soup = self._as_soup('http://www.animechiby.com?{params}', params={
+        soup = self._get('http://www.animechiby.com', params={
             's': self.media.metadata['name']
         })
 
@@ -45,7 +48,7 @@ class AnimeChibyExtractor(AnimeExtractor):
         results = []
 
         for link in links:
-            link_soup = self._as_soup(link.get('href'))
+            link_soup = self._get(link.get('href'))
 
             # We get all the available sub-links for each link
             for section in link_soup.select('.su-spoiler'):
@@ -128,7 +131,7 @@ class AnimeChibyExtractor(AnimeExtractor):
                 else:
                     # In the second case, we don't need to input title. However
                     # we need to get real links.
-                    soup = self._as_soup(self._unshorten(link))
+                    soup = self._get(self._unshorten(link))
                     second_case_links += soup.select('td a[target="_BLANK"]')
 
             first_case_sources = list(executor.map(

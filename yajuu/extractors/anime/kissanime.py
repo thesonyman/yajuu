@@ -1,12 +1,13 @@
 import re
 import time
 import base64
+import random
 import concurrent.futures
 
 import cfscrape
 import requests
-import bs4
 import execjs
+import bs4
 
 from . import AnimeExtractor
 
@@ -19,28 +20,25 @@ class KissAnimeExtractor(AnimeExtractor):
 	def __init__(self, media, season):
 		super().__init__(media, season)
 
-		self.session = cfscrape.create_scraper()
 		self.session.headers['User-Agent'] = (
 			'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like '
 			'Gecko) Chrome/41.0.2228.0 Safari/537.36'
 		)
 
-	def search(self):
-		# Preliminary, else kissanime returns 404
-		self.session.get('https://kissanime.to')
+	def _get_url(self):
+		return 'http://kissanime.to'
 
-		soup = self._as_soup(
-			'https://kissanime.to/Search/SearchSuggest',
-			method='post', data={
-				'type': 'Anime',
-				'keyword': self.media.metadata['name']
-			},
-			headers={
-				'origin': 'https://kissanime.to',
-				'referer': 'https://kissanime.to',
-				'x-requested-with': 'XMLHttpRequest'
-			}
-		)
+	def search(self):
+		self._disable_cloudflare()
+
+		soup = self._post('https://kissanime.to/Search/SearchSuggest', data={
+			'type': 'Anime',
+			'keyword': self.media.metadata['name']
+		}, headers={
+			'origin': 'https://kissanime.to',
+			'referer': 'https://kissanime.to',
+			'x-requested-with': 'XMLHttpRequest'
+		})
 
 		results = []
 
@@ -50,7 +48,7 @@ class KissAnimeExtractor(AnimeExtractor):
 		return results
 
 	def extract(self, season, result):
-		soup = self._as_soup(result[1], method='get')
+		soup = self._get(result[1])
 
 		sources = {}
 
@@ -77,6 +75,9 @@ class KissAnimeExtractor(AnimeExtractor):
 		url = 'https://kissanime.to' + link.get('href')
 		episode_number_results = self.EPISODE_REGEX.search(link.text)
 
+		session = cfscrape.create_scraper()
+		session.get(self._get_url())
+
 		if not episode_number_results:
 			return None
 
@@ -84,8 +85,25 @@ class KissAnimeExtractor(AnimeExtractor):
 
 		print('[KissAnime] Processing episode {}'.format(episode_number))
 
-		episode_response = self.session.get(url)
-		episode_soup = bs4.BeautifulSoup(episode_response, 'html.parser')
+		correct = False
+
+		while not correct:
+			print('[GETTING SOUP] :: {}'.format(episode_number))
+			# episode_soup = self._get(url)
+			episode_soup = bs4.BeautifulSoup(session.get(url).text, 'html.parser')
+
+			if 'Are you human?' not in episode_soup.prettify():
+				correct = True
+			else:
+				print('[ARE YOU HUMAN] :: {}'.format(episode_number))
+				# Else reset the connection
+				time.sleep(1)
+				session.cookies.clear()
+
+		print('[OK] :: {}'.format(episode_number))
+
+		with open('test', 'w+') as file:
+			file.write(episode_soup.prettify())
 
 		quality_select = episode_soup.select('select#selectQuality')[0]
 

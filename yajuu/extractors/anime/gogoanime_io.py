@@ -7,9 +7,15 @@ from .. import unshorten
 
 
 class GogoAnimeIoExtractor(AnimeExtractor):
+    def _get_url(self):
+        return 'http://gogoanime.io'
+
     def search(self):
-        soup = self._as_soup('http://gogoanime.io/site/loadSearch', data={
-            'data': self.media.metadata['name']
+        self._disable_cloudflare()
+
+        soup = self._post('http://gogoanime.io/site/loadSearch', data={
+            'data': self.media.metadata['name'],
+            'id': '-1'
         })
 
         results = []
@@ -21,7 +27,7 @@ class GogoAnimeIoExtractor(AnimeExtractor):
         return results
 
     def extract(self, season, result):
-        soup = self._as_soup(result[1])
+        soup = self._get(result[1])
 
         movie_id = soup.select('#movie_id')[0].get('value')
         default_ep = soup.select('#default_ep')[0].get('value')
@@ -53,7 +59,7 @@ class GogoAnimeIoExtractor(AnimeExtractor):
             '{}&id={}&default_ep={}'
         ).format(ep_start, ep_end, movie_id, default_ep)
 
-        block_soup = self._as_soup(block_url)
+        block_soup = self._get(block_url)
 
         urls = []
 
@@ -63,15 +69,15 @@ class GogoAnimeIoExtractor(AnimeExtractor):
         return urls
 
     def _episode_worker(self, url):
-        print('[GogoAnimeIo] Processing episode', url)
-
-        soup = self._as_soup(url)
+        soup = self._get(url)
         episode_number = int(soup.select('#default_ep')[0].get('value'))
 
+        print('[GogoAnimeIo] Processing episode', episode_number)
+
         sources = unshorten(
-            soup.select('div.anime_video_body > a')[0].get('href')
+            soup.select('div.download-anime > a')[0].get('href')
         )
 
-        print('[GogoAnimeIo] Done processing episode', url)
+        print('[GogoAnimeIo] Done processing episode', episode_number)
 
         return (episode_number, sources)
