@@ -27,10 +27,13 @@ def unshorten(url, quality=None):
         'drive.google.com': unshorten_google_drive
     }
 
-    netloc = urllib.parse.urlsplit(url).netloc
+    host = urllib.parse.urlsplit(url).netloc
 
-    if netloc in unshorteners:
-        return unshorteners[netloc](url, quality)
+    if host.startswith('www.'):
+        host = host[4:]
+
+    if host in unshorteners:
+        return unshorteners[host](url, quality)
 
     return None
 
