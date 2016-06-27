@@ -2,7 +2,7 @@ from .. import SeasonOrchestrator
 
 from yajuu.extractors import (
 	AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
-	HtvanimeExtractor, MasteraniExtractor
+	HtvanimeExtractor, MasteraniExtractor, ChiaAnimeExtractor
 )
 
 
