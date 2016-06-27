@@ -36,6 +36,7 @@ Here is the complete list:
   - http://gogoanime.io
   - http://htvanime.com
   - http://www.masterani.me
+  - http://rawranime.tv
 
 The list of the sites that are to be added next is available on the project [trello board](https://trello.com/c/EhsCIloT/3-sites-to-support).
 

@@ -2,7 +2,8 @@ from .. import SeasonOrchestrator
 
 from yajuu.extractors import (
 	AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
-	HtvanimeExtractor, MasteraniExtractor, ChiaAnimeExtractor
+	HtvanimeExtractor, MasteraniExtractor, ChiaAnimeExtractor,
+	RawrAnimeExtractor
 )
 
 
@@ -13,5 +14,5 @@ class AnimeOrchestrator(SeasonOrchestrator):
     def _get_default_extractors(self):
         return [
             AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
-            HtvanimeExtractor, MasteraniExtractor
+            HtvanimeExtractor, MasteraniExtractor, RawrAnimeExtractor
         ]
