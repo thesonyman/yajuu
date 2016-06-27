@@ -5,26 +5,32 @@ website, that includes the stream quality and direct source.
 import urllib.parse
 import re
 import subprocess
-import shlex
+import base64
 
+import shlex
+import execjs
 import requests
 from bs4 import BeautifulSoup
 
 
-def unshorten(url):
+def unshorten(url, quality=None):
     '''Will try to locate the correct unshortener by itself.'''
 
     unshorteners = {
         'tiwi.kiwi': unshorten_tiwi_kiwi,
         'www.solidfiles.com': unshorten_solidfiles,
         'vidstream.io': unshorten_vidstream,
-        'solidfiles.com': unshorten_solidfiles
+        'solidfiles.com': unshorten_solidfiles,
+        'mp4upload.com': unshorten_mp4upload,
+        'stream.moe': unshorten_stream_moe,
+        'bakavideo.tv': unshorten_bakavideo,
+        'drive.google.com': unshorten_google_drive
     }
 
     netloc = urllib.parse.urlsplit(url).netloc
 
     if netloc in unshorteners:
-        return unshorteners[netloc](url)
+        return unshorteners[netloc](url, quality)
 
     return None
 
@@ -44,7 +50,7 @@ def get_quality(stream_url, quote=True):
     return int(''.join(x for x in raw_output.decode('utf-8') if x.isdigit()))
 
 
-def unshorten_tiwi_kiwi(url):
+def unshorten_tiwi_kiwi(url, quality=None):
     # Some of the videos are available on the first page. If this regex is
     # successfull, then the video is directly available.
     quality_regex = re.compile(r'[0-9]+x([0-9]+), .+ [a-zA-Z]+')
@@ -129,14 +135,14 @@ def unshorten_tiwi_kiwi(url):
     return sources
 
 
-def unshorten_solidfiles(url):
+def unshorten_solidfiles(url, quality=None):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
     link = soup.find('a', {'id': 'download-btn'}).get('href')
     returned = [(get_quality(link), link)]
     return returned
 
 
-def unshorten_vidstream(url):
+def unshorten_vidstream(url, quality=None):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
     quality_regex = re.compile(r'Download \((\d+)P - .+')
@@ -150,3 +156,70 @@ def unshorten_vidstream(url):
         ))
 
     return sources
+
+
+def unshorten_mp4upload(url, quality=None):
+    html = requests.get(url).text
+    src_regex = re.compile(r'"file": "(.+)"')
+
+    if 'File was deleted' in html:
+        return []
+
+    src = src_regex.search(html).group(1)
+
+    if quality is None:
+        quality = get_quality(src)
+
+    return [(quality, src)]
+
+
+def unshorten_stream_moe(url, quality=None):
+    base64_regex = re.compile(r'atob\(\'(.+)\'\)')
+    src_regex = re.compile(r'<source src="(.+?)" type="')
+    
+    html = requests.get(url).text
+    frame_html = str(base64.b64decode(base64_regex.search(html).group(1)))
+
+    src = src_regex.search(frame_html).group(1)
+
+    if quality is None:
+        quality = get_quality(src)
+
+    return [(quality, src)]
+
+
+def unshorten_bakavideo(url, quality=None):
+    id_regex = re.compile(r'https?://bakavideo.tv/embed/(.+)')
+    id = id_regex.search(url).group(1)
+
+    data = requests.get(
+        'https://bakavideo.tv/get/files.embed?f={}'.format(id)
+    ).json()
+
+    html = base64.b64decode(
+        data['content']
+    ).decode('utf-8').replace('\n', '').replace('\t', '')
+
+    soup = BeautifulSoup(html, 'html.parser')
+    src = soup.find('source').get('src')
+
+    if quality is None:
+        quality = get_quality(src)
+
+    return [(quality, src)]
+
+
+def unshorten_google_drive(url, quality=None):
+    html = requests.get(url).text
+    fmt_stream_map_regex = re.compile(r'\["fmt_stream_map"\,(".+?")\]')
+
+    javascript = '{}.split(\'|\')[1]'.format(
+        fmt_stream_map_regex.search(html).group(1)
+    )
+
+    src = execjs.eval(javascript)
+
+    if quality is None:
+        quality = get_quality(src)
+
+    return [(quality, src)]

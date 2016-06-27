@@ -5,3 +5,4 @@ from .anime_haven import AnimeHavenExtractor
 from .gogoanime_io import GogoAnimeIoExtractor
 from .htvanime import HtvanimeExtractor
 from .kissanime import KissAnimeExtractor
+from .masterani import MasteraniExtractor
