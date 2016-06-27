@@ -15,6 +15,7 @@ It's made to be simple to use, just see it in action:
 
 ## Table of contents
  - [Installation](#installation)
+ - [Supported medias and websites](#supported-medias-and-websites)
  - [Usage](#usage)
  - [Configuration](#configuration)
  - [Development](#development)
@@ -26,6 +27,17 @@ git clone https://github.com/vivescere/yajuu.git
 cd yajuu
 sudo python setup.py install
 ```
+
+# Supported medias and websites
+Here is the complete list:
+ - Animes:
+  - http://www.animechiby.com
+  - http://animehaven.org
+  - http://gogoanime.io
+  - http://htvanime.com
+  - http://www.masterani.me
+
+The list of the sites that are to be added next is available on the project [trello board](https://trello.com/c/EhsCIloT/3-sites-to-support).
 
 ## Usage
 The only available mode is the download one, for now. A 'repair' mode is planned, which should be able to rename your files, check for invalid ones or with a too low quality, ...
