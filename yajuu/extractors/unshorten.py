@@ -11,7 +11,19 @@ import shlex
 import execjs
 import requests
 from bs4 import BeautifulSoup
+import logging
 
+logger = logging.getLogger(__name__ + '.' + 'unshorten')
+
+formatter = logging.Formatter('%(levelname)s: [UNSHORTEN] %(message)s')
+
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+
+# Prevent the messages from being propagated to the root logger
+logger.propagate = 0
+
+logger.addHandler(handler)
 
 def unshorten(url, quality=None):
     '''Will try to locate the correct unshortener by itself.'''
@@ -29,11 +41,17 @@ def unshorten(url, quality=None):
 
     host = urllib.parse.urlsplit(url).netloc
 
+    logger.debug('Host is {}'.format(host))
+
     if host.startswith('www.'):
+        logger.debug('Trimming "www."')
         host = host[4:]
 
     if host in unshorteners:
+        logger.debug('Found method.')
         return unshorteners[host](url, quality)
+    else:
+        logger.warning('Could not unshorten {}'.format(url))
 
     return None
 
@@ -41,12 +59,16 @@ def unshorten(url, quality=None):
 def get_quality(stream_url, quote=True):
     '''Using ffprobe, gets the given stream url quality.'''
 
+    logger.debug('Getting quality of stream at {}'.format(stream_url))
+
     path = shlex.quote(stream_url) if quote else stream_url
 
     command = [
         'ffprobe', '-i', path, '-show_entries', 'stream=height', '-v', 'quiet',
         '-of', 'csv=p=0'
     ]
+
+    logger.debug('Executing {}'.format(command))
 
     raw_output = subprocess.check_output(command)
 
@@ -72,6 +94,7 @@ def unshorten_tiwi_kiwi(url, quality=None):
     download_table = soup.find('table', {'class': 'tbl1'})
 
     if not download_table:
+        logger.warning('[tiwi.kiwi] could not locate download table')
         return None
 
     sources = []
@@ -93,6 +116,10 @@ def unshorten_tiwi_kiwi(url, quality=None):
 
         quality = int(quality_regex_results.group(1))
 
+        logger.debug('[tiwi.kiwi] found link with quality {}'.format(
+            quality
+        ))
+
         # Then extract the download url
         onclick_regex_result = re.search(
             onclick_regex,
@@ -105,6 +132,10 @@ def unshorten_tiwi_kiwi(url, quality=None):
         code = onclick_regex_result.group(1)
         mode = onclick_regex_result.group(2)
         hash = onclick_regex_result.group(3)
+
+        logger.debug('[tiwi.kiwi] {}'.format({
+            'code': code, 'mode': mode, 'hash': hash
+        }))
 
         url = (
             'http://tiwi.kiwi/dl?op=download_orig&id={}&'
@@ -127,10 +158,12 @@ def unshorten_tiwi_kiwi(url, quality=None):
             span = download_soup.find('div', {'id': 'container'}).find('span')
 
             if not span:
+                logger.warning('[tiwi.kiwi] Retrying, {} left'.format(retry))
                 retry += 1
                 continue
 
             link = span.find('a').get('href')
+            logger.debug('[tiwi.kiwi] Found link: {}'.format(link))
             sources.append((quality, link))
 
             break
@@ -141,6 +174,9 @@ def unshorten_tiwi_kiwi(url, quality=None):
 def unshorten_solidfiles(url, quality=None):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
     link = soup.find('a', {'id': 'download-btn'}).get('href')
+
+    logger.debug('[solidfiles] Found {}'.format(link))
+
     returned = [(get_quality(link), link)]
     return returned
 
@@ -158,6 +194,8 @@ def unshorten_vidstream(url, quality=None):
             link.get('href')
         ))
 
+    logger.debug('[vidstream] found {} sources'.format(len(link)))
+
     return sources
 
 
@@ -166,11 +204,13 @@ def unshorten_mp4upload(url, quality=None):
     src_regex = re.compile(r'"file": "(.+)"')
 
     if 'File was deleted' in html:
+        logger.warning('[mp4upload] File at {} was deleted'.format(url))
         return []
 
     src = src_regex.search(html).group(1)
 
     if quality is None:
+        logger.warning('[mp4upload] quality was not passed')
         quality = get_quality(src)
 
     return [(quality, src)]
@@ -184,8 +224,10 @@ def unshorten_stream_moe(url, quality=None):
     frame_html = str(base64.b64decode(base64_regex.search(html).group(1)))
 
     src = src_regex.search(frame_html).group(1)
+    logger.debug('[stream.moe] found source {}'.format(src))
 
     if quality is None:
+        logger.warning('[stream.moe] quality was not passed')
         quality = get_quality(src)
 
     return [(quality, src)]
@@ -206,7 +248,10 @@ def unshorten_bakavideo(url, quality=None):
     soup = BeautifulSoup(html, 'html.parser')
     src = soup.find('source').get('src')
 
+    logger.debug('[bakavideo] found source {}'.format(src))
+
     if quality is None:
+        logger.warning('[bakavideo] quality was not passed')
         quality = get_quality(src)
 
     return [(quality, src)]
@@ -220,9 +265,14 @@ def unshorten_google_drive(url, quality=None):
         fmt_stream_map_regex.search(html).group(1)
     )
 
+    logger.debug('Executing: {}'.format(javascript))
+
     src = execjs.eval(javascript)
 
+    logger.debug('[google drive] found source {}'.format(src))
+
     if quality is None:
+        logger.warning('[google drive] quality was not passed')
         quality = get_quality(src)
 
     return [(quality, src)]

@@ -1,7 +1,10 @@
 import concurrent.futures
 import difflib
+import logging
 
 from . import Orchestrator
+
+logger = logging.getLogger(__name__)
 
 
 class SeasonOrchestrator(Orchestrator):
@@ -29,6 +32,10 @@ class SeasonOrchestrator(Orchestrator):
                 )
 
                 query = self.media.metadata['name'].lower()
+
+                logger.debug('Starting extractor {}'.format(
+                    type(extractor).__name__
+                ))
 
                 # Sort the results by similarity with the media name
                 results = sorted(
@@ -81,8 +88,8 @@ class SeasonOrchestrator(Orchestrator):
         extractor, season, result = data
         extractor_name = type(extractor).__name__
 
-        print('[{}] Starting extractor'.format(extractor_name))
+        print('INFO: [{}] Starting extractor'.format(extractor_name))
         extractor_sources = extractor.extract(season, result)
-        print('[{}] Extractor done'.format(extractor_name))
+        print('INFO: [{}] Extractor done'.format(extractor_name))
 
         return (season, extractor_sources)

@@ -205,7 +205,7 @@ def select_media(name, results):
 def select_result(extractor, query, message, results):
     extractor_name = type(extractor).__name__
 
-    logger.debug('{} found {}'.format(extractor_name, results))
+    logger.debug('{} found {} results'.format(extractor_name, len(results)))
 
     results = results[:20]
 

@@ -37,6 +37,8 @@ class AnimeHavenExtractor(AnimeExtractor):
             link = title_block.find('a')  # The first one is the good one
             title, href = link.get('title'), link.get('href')
 
+            self.logger.debug('Found block {} ({})'.format(title, href))
+
             versions_soup = self._get(href)
 
             versions = list(
@@ -45,6 +47,7 @@ class AnimeHavenExtractor(AnimeExtractor):
             )
 
             for version, url in versions:
+                self.logger.debug('-> Found version {}'.format(url))
                 results.append(('{} ({})'.format(title, version), url))
 
         return results
@@ -61,6 +64,8 @@ class AnimeHavenExtractor(AnimeExtractor):
             futures = []
 
             for page in pages:
+                self.logger.debug('Processing page {}'.format(page))
+
                 futures.append(executor.submit(
                     self.page_worker, base_url + str(page)
                 ))
@@ -105,11 +110,17 @@ class AnimeHavenExtractor(AnimeExtractor):
             pages_url_base = page_regex_results.group(1)
             pages = int(page_regex_results.group(2))
 
+            self.logger.debug('Discovered page {}'.format(discovered_episodes))
+
             return (
                 discovered_episodes,
                 pages_url_base,
                 list(range(2, pages + 1))
             )
+
+        self.logger.debug('On page {} discovered {} episodes'.format(
+            url, len(discovered_episodes)
+        ))
 
         return discovered_episodes
 
@@ -122,7 +133,7 @@ class AnimeHavenExtractor(AnimeExtractor):
             return
 
         episode_number = int(episode_number_search.group(1))
-        print('[AnimeHaven] Processing episode {}'.format(episode_number))
+        self.logger.info('Processing episode {}'.format(episode_number))
 
         soup = self._get(link)
 
@@ -154,12 +165,18 @@ class AnimeHavenExtractor(AnimeExtractor):
             __sources = unshorten(url)
 
             if not __sources:
+                self.logger.warning('One source was unshortenable: {}'.format(
+                    url
+                ))
+
                 continue
 
             _sources += __sources
 
-        print('[AnimeHaven] Done processing episode {}'.format(
-            episode_number
+        self.logger.debug('Episode {}: found {} sources'.format(
+            episode_number, len(_sources)
         ))
+
+        self.logger.info('Done processing episode {}'.format(episode_number))
 
         return (episode_number, _sources)

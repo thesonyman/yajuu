@@ -52,36 +52,40 @@ class MasteraniExtractor(AnimeExtractor):
 
 		number = int(episode_details['episode'])
 
-		print('[Masterani] Processing episode {}'.format(number))
+		self.logger.info('Processing episode {}'.format(number))
 
 		url = 'http://www.masterani.me/anime/watch/{}/{}'.format(slug, number)
 
 		# We extract the object hard-coded, and translate it to json.
-		mirrors = json.loads(execjs.eval('JSON.stringify({})'.format(
+		javascript = 'JSON.stringify({})'.format(
 			self.MIRRORS_REGEX.search(self.session.get(url).text).group(1)
-		)))['mirrors']
+		)
+
+		self.logger.debug(javascript)
+
+		mirrors = json.loads(execjs.eval(javascript))['mirrors']
 
 		sources = []
 
 		for mirror in mirrors:
+			prefix = mirror['host']['embed_prefix']
 			suffix = mirror['host']['embed_suffix']
+
+			if not prefix:
+				prefix = ''
 
 			if not suffix:
 				suffix = ''
 
-			url = (
-				mirror['host']['embed_prefix'] + mirror['embed_id'] +
-				suffix
-			)
+			url = prefix + mirror['embed_id'] + suffix
+
+			self.logger.debug('Found mirror source: {}'.format(url))
 
 			mirror_sources = unshorten(url, quality=mirror['quality'])
 
 			if mirror_sources:
 				sources += mirror_sources
-			else:
-				with open('test.txt', 'w') as file:
-					file.write(url)
 
-				print(url)
+		self.logger.info('Done processing episode {}'.format(number))
 
 		return (number, sources)

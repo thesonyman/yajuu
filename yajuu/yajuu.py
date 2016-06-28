@@ -28,6 +28,10 @@ def cli(ctx, media_type):
     ctx.obj['MEDIA_CLASS'] = MEDIA_TYPES[media_type][0]
     ctx.obj['ORCHESTRATOR_CLASS'] = MEDIA_TYPES[media_type][1]
 
+    # Mute the requests logger for the info level
+    if logger.level >= logging.INFO:
+    	logging.getLogger('requests').setLevel(logging.WARNING)
+
 cli.add_command(download)
 
 

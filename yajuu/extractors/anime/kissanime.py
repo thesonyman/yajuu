@@ -83,27 +83,27 @@ class KissAnimeExtractor(AnimeExtractor):
 
 		episode_number = int(episode_number_results.group(1))
 
-		print('[KissAnime] Processing episode {}'.format(episode_number))
+		self.logger.info('Processing episode {}'.format(episode_number))
 
 		correct = False
 
 		while not correct:
-			print('[GETTING SOUP] :: {}'.format(episode_number))
+			self.logger.debug('[GETTING SOUP] :: {}'.format(episode_number))
 			# episode_soup = self._get(url)
 			episode_soup = bs4.BeautifulSoup(session.get(url).text, 'html.parser')
 
 			if 'Are you human?' not in episode_soup.prettify():
 				correct = True
 			else:
-				print('[ARE YOU HUMAN] :: {}'.format(episode_number))
+				self.logger.debug('[ARE YOU HUMAN] :: {}'.format(
+					episode_number
+				))
+
 				# Else reset the connection
 				time.sleep(1)
 				session.cookies.clear()
 
-		print('[OK] :: {}'.format(episode_number))
-
-		with open('test', 'w+') as file:
-			file.write(episode_soup.prettify())
+		self.logger.debug('[OK] :: {}'.format(episode_number))
 
 		quality_select = episode_soup.select('select#selectQuality')[0]
 
@@ -114,6 +114,6 @@ class KissAnimeExtractor(AnimeExtractor):
 			src = base64.b64decode(option.get('value')).decode('utf-8')
 			sources.append((quality, src))
 
-		print('[KissAnime] Done Processing episode {}'.format(episode_number))
+		self.logger.info('Done Processing episode {}'.format(episode_number))
 
 		return (episode_number, sources)

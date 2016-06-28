@@ -4,8 +4,10 @@ bs4==0.0.1
 cfscrape==1.6.4
 click==6.6
 click-log==0.1.4
+coloredlogs==5.0
 coverage==4.0.3
 httplib2==0.9.2
+humanfriendly==1.44.7
 inquirer==2.1.7
 pbr==1.10.0
 PyExecJS==1.4.0

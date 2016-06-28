@@ -45,6 +45,8 @@ class RawrAnimeExtractor(AnimeExtractor):
 			number_div = episode.find('div', {'class': 'ep-number'})
 			episodes.append((version, result[1], number_div.text))
 
+		self.logger.debug('Found {} episodes'.format(len(episodes)))
+
 		sources = {}
 
 		with concurrent.futures.ThreadPoolExecutor(16) as executor:
@@ -59,7 +61,7 @@ class RawrAnimeExtractor(AnimeExtractor):
 	def page_worker(self, data):
 		version, id, number = data
 
-		print('[RawrAnime] Processing episode {}'.format(number))
+		self.logger.debug('Processing episode {}'.format(number))
 
 		id = id[7:]  # Remove '/anime'
 
@@ -81,13 +83,19 @@ class RawrAnimeExtractor(AnimeExtractor):
 				x for x in element.get('data-quality') if x.isdigit()
 			))
 
-			src = unshorten(element.get('data-src'), quality=quality)
+			src = element.get('data-src')
+
+			self.logger.debug('Unshortening {}, quality {}p'.format(
+				src, quality
+			))
+
+			src = unshorten(src, quality=quality)
 
 			if src is None:
 				continue
 
 			sources += src
 
-		print('[RawrAnime] Done processing episode {}'.format(number))
+		self.logger.debug('Done processing episode {}'.format(number))
 
 		return (int(number), sources)

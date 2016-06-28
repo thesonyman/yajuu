@@ -81,20 +81,21 @@ class HtvanimeExtractor(AnimeExtractor):
                 if episode_response is not None:
                     break
                 else:
+                    self.logger.warning('Retrying, {} left'.format(retries))
                     retries += 1
             except (
                 json.decoder.JSONDecodeError,
                 requests.exceptions.ReadTimeout
             ):
                 retries += 1
-                print('-> retry::({})'.format(retries))
+                self.logger.warning('Retrying, {} left'.format(retries))
 
         # TODO: special episodes
         if not episode['episode_number']:
             return None
 
         episode_number = int(episode['episode_number'])
-        print('[Htvanime] Processing episode {}'.format(episode_number))
+        self.logger.info('Processing episode {}'.format(episode_number))
 
         _sources = []
 

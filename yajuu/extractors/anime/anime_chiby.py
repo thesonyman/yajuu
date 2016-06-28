@@ -61,6 +61,10 @@ class AnimeChibyExtractor(AnimeExtractor):
                     re.search(onclick_regex, x.get('onclick')).group(1)
                 ) for x in section.find_all('input'))
 
+                self.logger.debug('Section {} has {} sources'.format(
+                    sub_title, len(available_sources)
+                ))
+
                 # We determine the section title, that is the top-level title
                 # concatenated with the section title.
                 block_title = '-> {} ({})'.format(link.text, sub_title)
@@ -70,6 +74,8 @@ class AnimeChibyExtractor(AnimeExtractor):
         return results
 
     def _unshorten(self, link):
+        self.logger.debug('Unshortening {}'.format(link))
+
         request = requests.get(link, headers=HTTP_HEADER)
 
         session_id = re.findall(r'sessionId\:(.*?)\"\,', request.text)
@@ -138,8 +144,14 @@ class AnimeChibyExtractor(AnimeExtractor):
                 self.map_first_case, first_case_links
             ))
 
+            self.logger.debug('Found first cases: {}'.format(first_case_links))
+
             second_case_sources = list(executor.map(
                 self.map_second_case, second_case_links
+            ))
+
+            self.logger.debug('Found second cases: {}'.format(
+                second_case_links
             ))
 
             for episode_number, episode_sources in (
@@ -169,13 +181,20 @@ class AnimeChibyExtractor(AnimeExtractor):
         except ValueError:
             return
 
-        print('[AnimeChiby] Processing episode {}'.format(
+        self.logger.info('Processing episode {}'.format(
             episode_number
         ))
 
         results = (episode_number, unshorten(link))
 
-        print('[AnimeChiby] Done Processing episode {}'.format(
+        if results:
+            self.logger.debug('Episode {}: found {} results'.format(
+                episode_number, len(results)
+            ))
+        else:
+            self.logger.debug('Episode {}: found no results')
+
+        self.logger.info('Done Processing episode {}'.format(
             episode_number
         ))
 
@@ -196,7 +215,7 @@ class AnimeChibyExtractor(AnimeExtractor):
         except:
             return None
 
-        print('[Animechiby] Processing episode {}'.format(
+        self.logger.info('Processing episode {}'.format(
             episode_number
         ))
 
@@ -207,9 +226,16 @@ class AnimeChibyExtractor(AnimeExtractor):
 
         _sources = unshorten(episode_link)
 
-        print('[AnimeChiby] Finished processing episode {}'.format(
+        self.logger.info('[AnimeChiby] Finished processing episode {}'.format(
             episode_number
         ))
+
+        if _sources:
+            self.logger.debug('Episode {}: found {} sources'.format(
+                episode_number, len(_sources)
+            ))
+        else:
+            self.logger.debug('Episode {}: found no sources')
 
         if not _sources:
             return None

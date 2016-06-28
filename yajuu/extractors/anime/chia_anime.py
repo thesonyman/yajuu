@@ -40,7 +40,10 @@ class ChiaAnimeExtractor(AnimeExtractor):
 			number_regex_result = number_regex.search(option.text.strip())
 
 			if not number_regex_result:
-				print('NOPE ' + url)
+				self.logger.warning('Episode at url {} is invalid'.format(
+					url
+				))
+
 				continue
 
 			episodes.append((
@@ -48,7 +51,7 @@ class ChiaAnimeExtractor(AnimeExtractor):
 				url
 			))
 
-			print(base_url.format(option.get('value')))
+			self.logger.debug(base_url.format(option.get('value')))
 
 		sources = {}
 
@@ -73,9 +76,9 @@ class ChiaAnimeExtractor(AnimeExtractor):
 	def _page_worker(self, data):
 		episode_number, url = data
 
-		print('[ChiaAnime] Processing episode {}'.format(episode_number))
+		self.logger.info('Processing episode {}'.format(episode_number))
 
 		soup = self._get(url)
 
-		print('[ChiaAnime] Done processing episode {}'.format(episode_number))
+		self.logger.info('Done processing episode {}'.format(episode_number))
 		return []
