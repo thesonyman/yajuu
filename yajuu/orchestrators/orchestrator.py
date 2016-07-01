@@ -2,8 +2,6 @@ import difflib
 from abc import ABCMeta, abstractmethod
 import concurrent.futures
 
-from yajuu._cli.utils import select
-
 
 class Orchestrator(metaclass=ABCMeta):
     NOT_SEARCHED_EXCEPTION = Exception(
@@ -60,7 +58,39 @@ class Orchestrator(metaclass=ABCMeta):
 
     def _select_result(self, extractor, query, message, results):
         # Get the correct result
-        return select(message, results)
+        choice = None
+       
+        if len(results) <= 0:
+            return False
+           
+        for index, row in enumerate(results):
+            print('[{}] {}'.format(index, row[0]))
+           
+        while choice is None:
+            try:
+                user_input = input(':: {} (0-{}) [0]: '.format(
+                    message, len(results) - 1
+                )).lower()
+            except KeyboardInterrupt:
+                choice = False
+                continue
+
+            if user_input == '':
+                choice = results[0]
+                continue
+            elif user_input == '-1':
+                choice = False
+                continue
+
+            try:
+                index = int(user_input)
+            except ValueError:
+                continue
+
+            if 0 <= index < len(results):
+                choice = results[index]
+
+        return choice
 
     def extract(self):
         if not self.searched:
