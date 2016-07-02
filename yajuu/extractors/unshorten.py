@@ -246,7 +246,12 @@ def unshorten_bakavideo(url, quality=None):
     ).decode('utf-8').replace('\n', '').replace('\t', '')
 
     soup = BeautifulSoup(html, 'html.parser')
-    src = soup.find('source').get('src')
+    source_div = src = soup.find('source')
+
+    if not source_div:
+        return None
+
+    src = source_div.get('src')
 
     logger.debug('[bakavideo] found source {}'.format(src))
 
