@@ -5,13 +5,11 @@ import os
 from pytvdbapi import api
 from pytvdbapi.error import TVDBIndexError
 
-from . import SeasonMedia
+from . import SeasonMedia, TheTvDbMedia
 from yajuu.config import config
 
 
-class Anime(SeasonMedia):
-    _db = None
-
+class Anime(TheTvDbMedia, SeasonMedia):
     class Episode(SeasonMedia.Episode):
         def __init__(self, season_number, data):
             super().__init__(season_number, data.EpisodeNumber)
@@ -28,64 +26,8 @@ class Anime(SeasonMedia):
                 **self.metadata
             )
 
-    def __init__(self, query, select_result=None):
-        if Anime._db is None:
-            Anime._db = api.TVDB(config['thetvdb']['api_key'])
-
-        self.select_result = select_result
-        super().__init__(query)
-
-    def __eq__(self, other):
-        return (
-            isinstance(other, self.__class__) and
-            self.metadata['id'] == other.metadata['id']
-        )
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
     def _update_metadata(self, query):
-        # First, fetch the show itself
-
-        not_found_exception = self.MediaNotFoundException(
-            'Could not find the anime on thetvdb.'
-        )
-
-        try:
-            results = Anime._db.search(query, config['thetvdb']['language'])
-
-            if len(results) == 0:
-                raise not_found_exception
-            elif len(results) == 1:
-                show = results[0]
-            else:
-                if self.select_result is None:
-                    show = None
-
-                    print('Search results for {} :'.format(query))
-
-                    for index, result in enumerate(results):
-                        print('{} - {}'.format(index, result.SeriesName))
-
-                    print('Please select the correct result.')
-
-                    while not show:
-                        index = input('>> ')
-
-                        try:
-                            index = int(index)
-                            show = results[index]
-                        except (ValueError, IndexError):
-                            pass
-                else:
-                    show = self.select_result(query, results)
-
-            # Fetch the metadata
-            show.update()
-        except TVDBIndexError:
-            raise not_found_exception
-
-        # Now we can extract the wanted data
+        show = self._get_result(query, self._select_result)
 
         self.metadata = {}
         self.metadata['id'] = show.id

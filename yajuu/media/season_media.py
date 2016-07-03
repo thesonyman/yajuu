@@ -8,7 +8,14 @@ from . import Media
 
 
 class SeasonMedia(Media):
+    '''Sub-abstract class, child of the Media class, which provides an
+    implementation of the season mechanism.
+
+    It supports multiple seasons, and implements an episode class.'''
+
     class Episode(metaclass=ABCMeta):
+        '''To be used with the season media class.'''
+
         def __init__(self, season_number, number):
             self.number = number
             self.season_number = season_number
@@ -29,9 +36,9 @@ class SeasonMedia(Media):
             pattern = self.file_path.format(ext='*')
             return len(glob(pattern)) > 0
 
-    def __init__(self, query):
+    def __init__(self, query, select_result=None):
         self._seasons = {}
-        super().__init__(query)
+        super().__init__(query, select_result=select_result)
 
     def __iter__(self):
         return iter(self._seasons.items())
