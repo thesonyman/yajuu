@@ -23,6 +23,10 @@ DEFAULT_CONFIG = {
                 'base': 'Anime',
                 'season': 'Season {season_number:02d}',
                 'episode': '{anime_name} - S{season_number:02d}e{episode_number:03d}.mp4'
+            },
+            'movie': {
+                'base': 'Movies',
+                'file': '{movie_name} ({movie_date}).mp4'
             }
         }
     },
