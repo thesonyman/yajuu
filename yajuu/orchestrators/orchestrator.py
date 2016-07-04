@@ -96,18 +96,15 @@ class Orchestrator(metaclass=ABCMeta):
         if not self.searched:
             raise self.NOT_SEARCHED_EXCEPTION
 
-        sources = {}
+        sources = []
 
         with concurrent.futures.ThreadPoolExecutor(6) as executor:
             executors_sources = executor.map(
                 self._map_extractor_sources, self._extractors.items()
             )
 
-            for ep_number, episode_sources in executors_sources.items():
-                if ep_number not in sources:
-                    sources[ep_number] = []
-
-                sources[ep_number] += episode_sources
+            if executors_sources:
+                sources += executors_sources
 
         return sources
 
