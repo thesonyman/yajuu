@@ -1,6 +1,5 @@
 import sys
 import os
-import re
 import xml.dom.minidom
 import glob
 import logging
@@ -9,68 +8,15 @@ import click
 import shlex
 import requests
 import inquirer
-import pytvdbapi
 import tabulate
 
-from yajuu.media import Media
+from .download_parser import validate_media
+from yajuu.media import Media, SeasonMedia
 from yajuu.config import config
+from .downloader import download_single_media, download_season_media
 
 logger = logging.getLogger(__name__)
 
-
-def validate_media(context, param, values):
-    '''Validates, formats and get from the web the passed medias'''
-
-    logger.info('Getting the required metadata..')
-
-    medias = []
-
-    for value in values:
-        # The order seasonS before season matters, that way we won't have a
-        # trailing 's' in the second part.
-        parts = re.split(' seasons | season ', value)
-
-        if len(parts) != 2:
-            raise click.BadParameter(
-                'a media parameter was not formatted as "name season seasons"'
-            )
-
-        query = parts[0].strip()
-
-        try:
-            media = context.obj['MEDIA_CLASS'](
-                query, select_result=select_media
-            )
-        except Media.MediaNotFoundException:
-            raise click.BadParameter('the media {} was not found'.format(
-                query
-            ))
-        except pytvdbapi.error.ConnectionError:
-            logger.error('You\'re not connected to any network.')
-            sys.exit(1)
-
-        try:
-            # Map the seasons to a list of integers.
-            seasons = list(map(lambda x: int(x.strip()), parts[1].split(',')))
-        except ValueError:
-            raise click.BadParameter(
-                'a media parameter season part was not formatted as a list of '
-                'numbers separated by commas.'
-            )
-
-        for season in seasons:
-            if season in media.get_seasons():
-                continue
-
-            raise click.BadParameter(
-                'The season {} for the media "{}" does not exist.'.format(
-                    season, media.metadata['name']
-                )
-            )
-
-        medias.append([media, seasons])
-
-    return medias
 
 @click.command()
 @click.pass_context
@@ -89,52 +35,10 @@ def download(ctx, media, skip_confirmation):
     medias = media
     del media
 
-    # First, we print out the medias that will be downloaded, so that the user
-    # can confirm them.
-    logger.info('\nMedias to download now: ')
+    # First step
+    confirm_download(medias, skip_confirmation)
 
-    # Generate a list similar to the medias list, only the first variable fo
-    # each element is the name of the media, and the second is a list of all
-    # the seasons formatted as a string.
-    to_download = [
-        (media.metadata['name'], ', '.join(str(season) for season in seasons))
-        for media, seasons in medias
-    ]
-
-    logger.info(tabulate.tabulate(
-        to_download, headers=['Name', 'Season(s)'], tablefmt='psql'
-    ) + '\n')
-
-    if not skip_confirmation:
-        confirm_question = inquirer.Confirm(
-            'continue', message='Do you wish to start the downloads?',
-            default=True
-        )
-
-        if not inquirer.prompt([confirm_question])['continue']:
-            logger.debug('Exiting program')
-            sys.exit(0)
-    else:
-        logger.debug('Skipping the confirmation.')
-
-    # Second step: create the orchestrators. They handle the difficult part:
-    # creating the extractors and executing them using threads. We will search
-    # on all the orchestrators before downloading anything, that way we'll be
-    # able to stop requesting informations from the user.
-    orchestrators = []
-
-    for media, seasons in medias:
-        orchestrator = ctx.obj['ORCHESTRATOR_CLASS'](media, seasons)
-
-        logger.debug('Searching for "{}", season{} {}.'.format(
-            media.metadata['name'], 's' if len(seasons) > 1 else '',
-            ', '.join(str(s) for s in seasons)
-        ))
-
-        # The object holds the data automatically
-        orchestrator.search(select_result=select_result)
-
-        orchestrators.append((media, seasons, orchestrator))
+    orchestrators = create_orchestrators(ctx, medias)
 
     logger.debug(orchestrators)
 
@@ -148,6 +52,14 @@ def download(ctx, media, skip_confirmation):
 
     # Specific path for the provided media type
     medias_path = os.path.join(config['paths']['base'], media_config['base'])
+
+    for media_type, data in orchestrators:
+        if media_type == 'season':
+            download_season_media(*data)
+        else:
+            download_single_media(*data)
+
+    sys.exit(0)
 
     for media, seasons, orchestrator in orchestrators:
         media_path = os.path.join(medias_path, media.metadata['name'])
@@ -184,23 +96,86 @@ def download(ctx, media, skip_confirmation):
                     sources
                 )
 
-def select_media(name, results):
-    question = inquirer.List('name',
-        message="Which title is correct for input '{}'?".format(name),
-        choices=list(x.SeriesName for x in results)
-    )
+def confirm_download(medias, skip_confirmation):
+    # First, we print out the medias that will be downloaded, so that the user
+    # can confirm them.
+    logger.info('\nMedias to download now: ')
 
-    answers = inquirer.prompt([question])
+    to_download_season = []
+    to_download_single = []
 
-    # If the user aborted
-    if not answers:
-        sys.exit(0)
+    for media_type, data in medias:
+        if media_type == 'season':
+            media, seasons = data
 
-    for result in results:
-        if result.SeriesName == answers['name']:
-            return result
+            to_download_season.append((
+                media.metadata['name'],
+                ', '.join(str(season) for season in seasons)
+            ))
+        else:
+            to_download_single.append((data.metadata['name'],))
 
-    return None
+    if len(to_download_season) > 0:
+        logger.info(tabulate.tabulate(
+            to_download_season, headers=['Name', 'Season(s)'], tablefmt='psql'
+        ) + '\n')
+
+    if len(to_download_single) > 0:
+        if len(to_download_season) > 0:
+            logger.info('')
+
+        logger.info(tabulate.tabulate(
+            to_download_single, headers=['Name'], tablefmt='psql'
+        ) + '\n')
+
+    if not skip_confirmation:
+        confirm_question = inquirer.Confirm(
+            'continue', message='Do you wish to start the downloads?',
+            default=True
+        )
+
+        if not inquirer.prompt([confirm_question])['continue']:
+            logger.debug('Exiting program')
+            sys.exit(0)
+    else:
+        logger.debug('Skipping the confirmation.')
+
+def create_orchestrators(ctx, medias):
+    # Second step: create the orchestrators. They handle the difficult part:
+    # creating the extractors and executing them using threads. We will search
+    # on all the orchestrators before downloading anything, that way we'll be
+    # able to stop requesting informations from the user.
+    orchestrators = []
+
+    for media_type, data in medias:
+        # If this is a season media
+        if media_type == 'season':
+            media, seasons = data
+
+            orchestrator = ctx.obj['ORCHESTRATOR_CLASS'](media, seasons)
+
+            logger.debug('Searching for "{}", season{} {}.'.format(
+                media.metadata['name'], 's' if len(seasons) > 1 else '',
+                ', '.join(str(s) for s in seasons)
+            ))
+
+            # The object holds the data automatically
+            orchestrator.search(select_result=select_result)
+
+            orchestrators.append((
+                'season', (media, seasons, orchestrator)
+            ))
+        else:
+            orchestrator = ctx.obj['ORCHESTRATOR_CLASS'](data)
+
+            logger.debug('Searching for "{}".'.format(data.metadata['name']))
+            orchestrator.search(select_result=select_result)
+
+            orchestrators.append((
+                'single', (data, orchestrator)
+            ))
+
+    return orchestrators
 
 def select_result(extractor, query, message, results):
     extractor_name = type(extractor).__name__
