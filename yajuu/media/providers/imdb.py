@@ -3,7 +3,7 @@ from imdbpie import Imdb
 from yajuu.config import config
 
 
-class ImdbMedia:
+class ImdbProvider:
     '''Helper class to get data from thetvdb api.'''
 
     def __eq__(self, other):

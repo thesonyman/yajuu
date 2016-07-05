@@ -4,7 +4,7 @@ from pytvdbapi.error import TVDBIndexError
 from yajuu.config import config
 
 
-class TheTvDbMedia:
+class TheTvDbProvider:
     '''Helper class to get data from thetvdb api.'''
 
     def __eq__(self, other):

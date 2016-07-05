@@ -1,9 +1,9 @@
 import datetime
 
-from . import Media, ImdbMedia
+from . import Media, ImdbProvider
 
 
-class Movie(ImdbMedia, Media):
+class Movie(ImdbProvider, Media):
     def _update_metadata(self, query):
         item = self._get_result(query, self._select_result)
 

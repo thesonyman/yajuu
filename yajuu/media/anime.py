@@ -5,11 +5,11 @@ import os
 from pytvdbapi import api
 from pytvdbapi.error import TVDBIndexError
 
-from . import SeasonMedia, TheTvDbMedia
+from . import SeasonMedia, TheTvDbProvider
 from yajuu.config import config
 
 
-class Anime(TheTvDbMedia, SeasonMedia):
+class Anime(TheTvDbProvider, SeasonMedia):
     class Episode(SeasonMedia.Episode):
         def __init__(self, season_number, data):
             super().__init__(season_number, data.EpisodeNumber)
