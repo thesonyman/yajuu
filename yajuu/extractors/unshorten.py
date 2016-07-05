@@ -6,6 +6,7 @@ import urllib.parse
 import re
 import subprocess
 import base64
+import time
 
 import shlex
 import execjs
@@ -36,7 +37,9 @@ def unshorten(url, quality=None):
         'mp4upload.com': unshorten_mp4upload,
         'stream.moe': unshorten_stream_moe,
         'bakavideo.tv': unshorten_bakavideo,
-        'drive.google.com': unshorten_google_drive
+        'drive.google.com': unshorten_google_drive,
+        'tusfiles.net': unshorten_tusfiles,
+        'upload.af': unshorten_upload_af
     }
 
     host = urllib.parse.urlsplit(url).netloc
@@ -70,7 +73,19 @@ def get_quality(stream_url, quote=True):
 
     logger.debug('Executing {}'.format(command))
 
-    raw_output = subprocess.check_output(command)
+    retries = 0
+    raw_output = None
+
+    while retries < 5:
+        try:
+            raw_output = subprocess.check_output(command)
+            break
+        except subprocess.CalledProcessError as e:
+            logger.error(e)
+            retries += 1
+
+    if not raw_output:
+        return 0
 
     return int(''.join(x for x in raw_output.decode('utf-8') if x.isdigit()))
 
@@ -221,6 +236,7 @@ def unshorten_stream_moe(url, quality=None):
     src_regex = re.compile(r'<source src="(.+?)" type="')
     
     html = requests.get(url).text
+    logger.debug(html)
     frame_html = str(base64.b64decode(base64_regex.search(html).group(1)))
 
     src = src_regex.search(frame_html).group(1)
@@ -278,6 +294,70 @@ def unshorten_google_drive(url, quality=None):
 
     if quality is None:
         logger.warning('[google drive] quality was not passed')
+        quality = get_quality(src)
+
+    return [(quality, src)]
+
+def unshorten_tusfiles(url, quality=None):
+    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    form = soup.find('form', {'name': 'F1'})
+
+    payload = {}
+    fields = ['op', 'id', 'rand', 'referer', 'method_free', 'method_premium']
+
+    for input in form.select('input'):
+        if input.get('name') not in fields:
+            continue
+
+        payload[input.get('name')] = input.get('value')
+
+    logger.debug('[tufiles] {}'.format(payload))
+
+    src = requests.post(url, data=payload, stream=True).url
+
+    if quality is None:
+        logger.warning('[tusfiles] quality was not passed')
+        quality = get_quality(src)
+
+    return [(quality, src)]
+
+def unshorten_upload_af(url, quality=None):
+    if not url.startswith('https'):
+        url = 'https' + url[4:]
+
+    def get_payload(source, selector, fields):
+        soup = BeautifulSoup(source, 'html.parser')
+        form = soup.select(selector)
+
+        payload = {}
+
+        for input in soup.find_all('input'):
+            if input.get('name') not in fields:
+                continue
+
+            payload[input.get('name')] = input.get('value')
+
+        return payload
+
+    download_1_payload = get_payload(
+        requests.get(url).text, 'form',
+        ['op', 'usr_login', 'id', 'fname', 'referer', 'method_free']
+    )
+
+    download_2_payload = get_payload(
+        requests.post(url, data=download_1_payload).text, 'form[name="F1"]',
+        ['op', 'usr_login', 'id', 'fname', 'referer', 'method_free']
+    )
+
+    soup = BeautifulSoup(
+        requests.post(url, data=download_2_payload).text,
+        'html.parser'
+    )
+
+    src = soup.select('.text-center a')[0].get('href')
+
+    if quality is None:
+        logger.warning('[upload.af] quality was not passed')
         quality = get_quality(src)
 
     return [(quality, src)]

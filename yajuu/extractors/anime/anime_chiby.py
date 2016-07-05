@@ -80,7 +80,7 @@ class AnimeChibyExtractor(AnimeExtractor):
 
         session_id = re.findall(r'sessionId\:(.*?)\"\,', request.text)
 
-        if len(session_id) < 0:
+        if len(session_id) <= 0:
             return
 
         session_id = re.sub(r'\s\"', '', session_id[0])
@@ -137,7 +137,12 @@ class AnimeChibyExtractor(AnimeExtractor):
                 else:
                     # In the second case, we don't need to input title. However
                     # we need to get real links.
-                    soup = self._get(self._unshorten(link))
+                    link = self._unshorten(link)
+
+                    if not link:
+                        continue
+
+                    soup = self._get(link)
                     second_case_links += soup.select('td a[target="_BLANK"]')
 
             first_case_sources = list(executor.map(

@@ -4,15 +4,16 @@ import click
 import click_log
 
 from .cli import download
-from .media import Anime
-from .orchestrators import AnimeOrchestrator
+from .media import Anime, Movie
+from .orchestrators import AnimeOrchestrator, MovieOrchestrator
 
 # Use 'yajuu' instead of __name__, because since __name__ is 'yajuu.yajuu', the
 # sub-packages won't be affected by the configuration.
 logger = logging.getLogger('yajuu')
 
 MEDIA_TYPES = {
-    'anime': (Anime, AnimeOrchestrator)
+    'anime': (Anime, AnimeOrchestrator),
+    'movie': (Movie, MovieOrchestrator)
 }
 
 
