@@ -1,15 +1,15 @@
 import datetime
 
-from . import Media, TheTvDbMedia
+from . import Media, ImdbMedia
 
 
-class Movie(TheTvDbMedia, Media):
+class Movie(ImdbMedia, Media):
     def _update_metadata(self, query):
-        show = self._get_result(query, self._select_result)
+        item = self._get_result(query, self._select_result)
 
-        self.metadata['id'] = show.id
-        self.metadata['name'] = show.SeriesName
-        self.metadata['year'] = show.FirstAired.year
+        self.metadata['id'] = item['imdb_id']
+        self.metadata['name'] = item['title']
+        self.metadata['year'] = item['year']
 
     def list_files(self):
         return []

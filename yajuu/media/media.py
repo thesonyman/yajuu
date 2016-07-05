@@ -30,9 +30,11 @@ class Media(metaclass=ABCMeta):
     def _select_result(self, query, results):
         '''Provides a base implementation to select a result from a list.'''
 
+        results = results[:10]
+
         question = inquirer.List('name',
             message="Which title is correct for input '{}'?".format(query),
-            choices=list(x.SeriesName for x in results)
+            choices=list(x[1] for x in results)
         )
 
         answers = inquirer.prompt([question])
@@ -42,8 +44,8 @@ class Media(metaclass=ABCMeta):
             sys.exit(0)
 
         for result in results:
-            if result.SeriesName == answers['name']:
-                return result
+            if result[1] == answers['name']:
+                return result[0]
 
         return None
 

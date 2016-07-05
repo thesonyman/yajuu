@@ -33,7 +33,14 @@ class TheTvDbMedia:
             elif len(results) == 1:
                 show = results[0]
             else:
-                show = select_result(query, results)
+                id = select_result(query, list(
+                    (x.id, x.SeriesName) for x in results
+                ))
+
+                # We'll use the last iteration show variable
+                for show in results:
+                    if show.id == id:
+                        break
 
             # Fetch the metadata
             show.update()
