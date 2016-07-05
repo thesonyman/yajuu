@@ -9,6 +9,16 @@ import cfscrape
 from bs4 import BeautifulSoup
 
 
+class abstractstatic(staticmethod):
+    __slots__ = ()
+
+    def __init__(self, function):
+        super(abstractstatic, self).__init__(function)
+        function.__isabstractmethod__ = True
+
+    __isabstractmethod__ = True
+
+
 class Extractor(metaclass=ABCMeta):
     def __init__(self, media):
         self.session = cfscrape.create_scraper()
@@ -32,7 +42,7 @@ class Extractor(metaclass=ABCMeta):
         self.logger.addHandler(handler)
         coloredlogs.install(level='DEBUG')
 
-    @abstractmethod
+    @abstractstatic
     def _get_url(self):
         pass
 

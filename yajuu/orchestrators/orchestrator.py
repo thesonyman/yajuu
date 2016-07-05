@@ -41,9 +41,15 @@ class Orchestrator(metaclass=ABCMeta):
                 reverse=True  # Better first
             )
 
+            message = (
+                'Please select the correct result for the media "{}", on '
+                'website {}'
+            )
+
             result = select_result(extractor, query, (
-                'Please select the correct result for the media "{}"'.format(
-                    self.media.metadata['name']
+                message.format(
+                    self.media.metadata['name'],
+                    extractor._get_url()
                 )
             ), results)
 
