@@ -103,8 +103,12 @@ class Orchestrator(metaclass=ABCMeta):
                 self._map_extractor_sources, self._extractors.items()
             )
 
+            executors_sources = list(executors_sources)
+
             if executors_sources:
-                sources += executors_sources
+                # Since the list needs to be flattened
+                for _sources in executors_sources:
+                    sources += _sources
 
         return sources
 

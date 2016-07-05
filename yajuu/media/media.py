@@ -2,6 +2,7 @@
 behavior of all media.'''
 
 from abc import ABCMeta, abstractmethod
+import sys
 
 import inquirer
 

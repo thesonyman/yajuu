@@ -9,7 +9,7 @@ class Movie(TheTvDbMedia, Media):
 
         self.metadata['id'] = show.id
         self.metadata['name'] = show.SeriesName
-        self.year = show.FirstAired.year
+        self.metadata['year'] = show.FirstAired.year
 
     def list_files(self):
         return []

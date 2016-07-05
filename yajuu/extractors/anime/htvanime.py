@@ -33,6 +33,9 @@ class HtvanimeExtractor(AnimeExtractor):
                 }
             ).json()
 
+            if response['status'] == 403:
+                return []
+
             page += 1
 
             pages_count = int(response['nbPages'])

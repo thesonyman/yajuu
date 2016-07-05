@@ -33,6 +33,7 @@ class IceFilmsExtractor(MovieExtractor):
         )
 
         referer = self._get_url() + soup.select('iframe#videoframe')[0].get('src')
+        sources = []
 
         for quality_div in sources_soup.select('.ripdiv'):
             print('=> ' + quality_div.find('b').text)
@@ -87,8 +88,11 @@ class IceFilmsExtractor(MovieExtractor):
                     urllib.parse.urlparse(encoded_sub_url).query
                 )[0][1]
 
-                print('->', (host_url, unshorten(host_url)))
+                _sources = unshorten(host_url)
+
+                if _sources:
+                    sources += _sources
 
                 time.sleep(0.5)
 
-        return []
+        return sources
