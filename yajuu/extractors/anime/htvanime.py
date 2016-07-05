@@ -33,7 +33,7 @@ class HtvanimeExtractor(AnimeExtractor):
                 }
             ).json()
 
-            if response['status'] == 403:
+            if 'status' in response and response['status'] == 403:
                 return []
 
             page += 1
