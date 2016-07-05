@@ -1,7 +1,9 @@
 import logging
 import os
 import glob
+import time
 import xml.dom.minidom
+import urllib.parse
 
 import shlex
 import requests
@@ -82,17 +84,10 @@ def download_file(directory, format, path_params, sources):
         'filepath': path
     }.items()}
 
-    minimum_quality = config['media']['minimum_quality']
-    maximum_quality = config['media']['maximum_quality']
+    sources = filter_sources(sources)
+    sources = sort_sources(sources)
 
-    for quality, url in sorted(sources, reverse=True):
-        if quality < minimum_quality:
-            logger.debug('Skipping too low quality {}'.format(quality))
-            continue
-        elif maximum_quality > 0 and quality > maximum_quality:
-            logger.warning('Skipping quality too high {}'.format(quality))
-            continue
-
+    for quality, url in sources:
         logger.info('Trying quality {}'.format(quality))
 
         command_params['url'] = shlex.quote(url)
@@ -140,3 +135,82 @@ def download_file(directory, format, path_params, sources):
         logger.debug('The plex reloader is disabled.')
 
     logger.info('')
+
+def filter_sources(sources):
+    minimum_quality = config['media']['minimum_quality']
+    maximum_quality = config['media']['maximum_quality']
+
+    good_sources = []
+
+    for quality, url in sorted(sources, reverse=True):
+        if quality < minimum_quality:
+            logger.debug('Skipping too low quality {}'.format(quality))
+            continue
+        elif maximum_quality > 0 and quality > maximum_quality:
+            logger.warning('Skipping quality too high {}'.format(quality))
+            continue
+
+        good_sources.append((quality, url))
+
+    return good_sources
+
+def sort_sources(sources):
+    '''Sort the available sources by speed.'''
+
+    # First, group the sources in a dict, cause we still want to preserve
+    # quality over speed.
+    by_quality = {}
+
+    for quality, url in sources:
+        if quality not in by_quality:
+            by_quality[quality] = []
+
+        by_quality[quality].append(url)
+
+    # Then, filter all blocks by speed.
+    sorted_qualities = []
+
+    for quality in sorted(by_quality, reverse=True):
+        sources = by_quality[quality]
+        chunk_qualities = []
+
+        for url in sources:
+            base = 'Testing source at {}.. '.format(
+                urllib.parse.urlparse(url).netloc
+            )
+
+            response = requests.get(url, stream=True)
+            size = 1e6  # Test over 1mb
+
+            start = time.time()
+            downloaded = 0
+
+            for chunk in response.iter_content(chunk_size=1024):
+                downloaded += len(chunk)
+
+                print('{} {} bytes'.format(
+                    base, downloaded
+                ), end='\r', flush=True)
+
+                if downloaded >= size:
+                    break
+
+            response_time = time.time() - start
+
+            print('{0} {1} bytes downloaded in {2:.2f} seconds'.format(
+                base, downloaded, response_time
+            ))
+
+            chunk_qualities.append((response_time, url))
+
+        # Now sort the chunk, fastest (smaller) first
+        chunk_qualities = sorted(
+            chunk_qualities, key=lambda x: x[0]
+        )
+
+        logger.debug((quality, chunk_qualities))
+
+        # Remove the response time and re-add the quality
+        sorted_qualities += [(quality, x[1]) for x in chunk_qualities]
+
+    return sorted_qualities
