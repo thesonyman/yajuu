@@ -88,7 +88,11 @@ def download_file(directory, format, path_params, sources):
     sources = sort_sources(sources)
 
     for quality, url in sources:
-        logger.info('Trying quality {}'.format(quality))
+        netloc = urllib.parse.urlparse(url).netloc
+
+        logger.info('Trying quality {}, downloading from {}'.format(
+            quality, netloc
+        ))
 
         command_params['url'] = shlex.quote(url)
         command = config['misc']['downloader'].format(**command_params)
@@ -157,7 +161,16 @@ def filter_sources(sources):
 def sort_sources(sources):
     '''Sort the available sources by speed.'''
 
-    # First, group the sources in a dict, cause we still want to preserve
+    # First, get the largest url netloc, so we can align the messages
+    max_length = 0
+
+    for quality, url in sources:
+        host_length = len(urllib.parse.urlparse(url).netloc)
+
+        if host_length > max_length:
+            max_length = host_length
+
+    # Then, group the sources in a dict, cause we still want to preserve
     # quality over speed.
     by_quality = {}
 
@@ -167,19 +180,21 @@ def sort_sources(sources):
 
         by_quality[quality].append(url)
 
-    # Then, filter all blocks by speed.
-    sorted_qualities = []
-
     for quality in sorted(by_quality, reverse=True):
         sources = by_quality[quality]
         chunk_qualities = []
 
         for url in sources:
-            base = 'Testing source at {}.. '.format(
-                urllib.parse.urlparse(url).netloc
+            netloc = urllib.parse.urlparse(url).netloc
+            offset = max_length - len(netloc)
+
+            base = 'Testing source at {}.. {} '.format(
+                netloc, ' ' * offset
             )
 
-            response = requests.get(url, stream=True)
+            response = requests.get(
+                url, stream=True, headers={'Connection':'close'}
+            )
             size = 1e6  # Test over 1mb
 
             start = time.time()
@@ -211,6 +226,5 @@ def sort_sources(sources):
         logger.debug((quality, chunk_qualities))
 
         # Remove the response time and re-add the quality
-        sorted_qualities += [(quality, x[1]) for x in chunk_qualities]
-
-    return sorted_qualities
+        for response_time, url in chunk_qualities:
+            yield (quality, url)
