@@ -48,8 +48,9 @@ class SeasonOrchestrator(Orchestrator):
 
                 result = select_method(extractor, query, (
                     'Please select the correct result for the media "{}", '
-                    'season {}'.format(
-                        self.media.metadata['name'], season
+                    'season {}, website "{}"'.format(
+                        self.media.metadata['name'], season,
+                        extractor._get_url()
                     )
                 ), results)
 
@@ -76,6 +77,9 @@ class SeasonOrchestrator(Orchestrator):
                 ))
 
                 for season, executor_sources in executors_sources:
+                    if not executor_sources:
+                        continue
+
                     for ep_number, episode_sources in executor_sources.items():
                         if ep_number not in sources[season]:
                             sources[season][ep_number] = []
@@ -88,8 +92,14 @@ class SeasonOrchestrator(Orchestrator):
         extractor, season, result = data
         extractor_name = type(extractor).__name__
 
-        print('INFO: [{}] Starting extractor'.format(extractor_name))
-        extractor_sources = extractor.extract(season, result)
-        print('INFO: [{}] Extractor done'.format(extractor_name))
+        logger.info('INFO: [{}] Starting extractor'.format(extractor_name))
+
+        try:
+            extractor_sources = extractor.extract(season, result)
+        except Exception as e:
+            logger.exception('The extractor {} failed'.format(extractor_name))
+            extractor_sources = None
+        else:
+            logger.info('[{}] Extractor done'.format(extractor_name))
 
         return (season, extractor_sources)

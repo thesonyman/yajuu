@@ -1,6 +1,9 @@
+import logging
 import difflib
 from abc import ABCMeta, abstractmethod
 import concurrent.futures
+
+logger = logging.getLogger(__name__)
 
 
 class Orchestrator(metaclass=ABCMeta):
@@ -114,7 +117,8 @@ class Orchestrator(metaclass=ABCMeta):
             if executors_sources:
                 # Since the list needs to be flattened
                 for _sources in executors_sources:
-                    sources += _sources
+                    if _sources:
+                        sources += _sources
 
         return sources
 
@@ -122,9 +126,15 @@ class Orchestrator(metaclass=ABCMeta):
         extractor, result = data
         extractor_name = type(extractor).__name__
 
-        print('[{}] Starting extractor'.format(extractor_name))
-        extractor_sources = extractor.extract(result)
-        print('[{}] Extractor done'.format(extractor_name))
+        logger.info('[{}] Starting extractor'.format(extractor_name))
+    
+        try:
+            extractor_sources = extractor.extract(result)
+        except Exception as e:
+            logger.exception('The extractor {} failed'.format(extractor_name))
+            extractor_sources = None
+        else:
+            logger.info('[{}] Extractor done'.format(extractor_name))
 
         return extractor_sources
 
