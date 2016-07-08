@@ -32,8 +32,8 @@ DEFAULT_CONFIG = {
     },
     'plex_reload': {
         'enabled': False,
-        'host': 'localhost',
-        'port': 32400,
+        'token': '',
+        'base_url': '',
         'sections': []
     },
     'misc': {
@@ -42,6 +42,7 @@ DEFAULT_CONFIG = {
 }
 
 config_path = os.path.join(click.get_app_dir('yajuu'), 'config.yaml')
+config = None
 
 
 def check_config(expected, given):
@@ -67,13 +68,17 @@ def check_config(expected, given):
     return config
 
 
+def save_config():
+    global config
+
+    with open(config_path, 'w+') as file:
+        file.write(yaml.dump(config, default_flow_style=False))
+
+
 if os.path.exists(config_path):
     with open(config_path, 'r') as file:
         config = check_config(DEFAULT_CONFIG, yaml.load(file))
 else:
     config = DEFAULT_CONFIG
-
     os.makedirs(os.path.dirname(config_path))
-
-    with open(config_path, 'w+') as file:
-        file.write(yaml.dump(config, default_flow_style=False))
+    save_config()

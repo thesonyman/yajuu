@@ -7,13 +7,27 @@ import urllib.parse
 
 import shlex
 import requests
+import plexapi.server
 
 from yajuu.config import config
 
 logger = logging.getLogger(__name__)
+server = None
+
+
+def get_plex():
+    global server
+
+    if server is None:
+        server = plexapi.server.PlexServer(
+            config['plex_reload']['base_url'], config['plex_reload']['token']
+        )
 
 
 def download_single_media(path, media_config, media, orchestrator):
+    if config['plex_reload']['enabled']:
+        get_plex()
+
     sources = get_sources(media, orchestrator)
 
     logger.debug(sources)
@@ -26,6 +40,9 @@ def download_single_media(path, media_config, media, orchestrator):
     download_file(path, media_config['file'], path_params, sources)
 
 def download_season_media(path, media_config, media, seasons, orchestrator):
+    if config['plex_reload']['enabled']:
+        get_plex()
+
     sources = get_sources(media, orchestrator)
 
     for season, season_sources in sources.items():
@@ -112,29 +129,12 @@ def download_file(directory, format, path_params, sources):
         return
 
     if config['plex_reload']['enabled']:
-        base_plex_url = 'http://{}:{}/library/sections'.format(
-            config['plex_reload']['host'], str(config['plex_reload']['port'])
-        )
-
-        xml_sections = xml.dom.minidom.parseString(
-            requests.get(base_plex_url).text
-        ).getElementsByTagName('Directory')
-
-        for section in xml_sections:
-            section_title = section.getAttribute('title')
-
-            logger.debug('Plex: discovered section {}'.format(section_title))
-
-            if section_title not in config['plex_reload']['sections']:
+        for section in server.library.sections():
+            if section.title not in config['plex_reload']['sections']:
                 continue
 
-            logger.debug('Plex: reloading section {}'.format(section_title))
-
-            key = section.getAttribute('key')
-
-            url = base_plex_url + key + '/refresh'
-            logger.debug('Reloading {}'.format(url))
-            requests.get(url)
+            logger.info('Plex: reloading section "{}"'.format(section.title))
+            section.refresh()
     else:
         logger.debug('The plex reloader is disabled.')
 

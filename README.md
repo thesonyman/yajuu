@@ -57,17 +57,17 @@ The --media-type option sets the media type for ALL the passed medias, and accep
 Simple use the --media option of the download section:
 
 ```bash
-yajuu download --media 'Code geass season 1'
+yajuu media download --media 'Code geass season 1'
 ```
 
 You can pass it multiple times:
 ```bash
-yajuu download --media 'Code geass season 1' --media 'Berserk season 1'
+yajuu media download --media 'Code geass season 1' --media 'Berserk season 1'
 ```
 
 And request more than one season:
 ```bash
-yajuu download --media 'Psycho-Pass seasons 1,2'
+yajuu media download --media 'Psycho-Pass seasons 1,2'
 ```
 
 ## Configuration
