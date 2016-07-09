@@ -15,7 +15,7 @@ class Orchestrator(metaclass=ABCMeta):
         self.media = media
         self.searched = False
 
-        if extractors == None:
+        if extractors is None:
             self._extractors = self._create_extractors(
                 self._get_default_extractors()
             )
@@ -68,13 +68,13 @@ class Orchestrator(metaclass=ABCMeta):
     def _select_result(self, extractor, query, message, results):
         # Get the correct result
         choice = None
-       
+
         if len(results) <= 0:
             return False
-           
+
         for index, row in enumerate(results):
             print('[{}] {}'.format(index, row[0]))
-           
+
         while choice is None:
             try:
                 user_input = input(':: {} (0-{}) [0]: '.format(
@@ -127,7 +127,7 @@ class Orchestrator(metaclass=ABCMeta):
         extractor_name = type(extractor).__name__
 
         logger.info('[{}] Starting extractor'.format(extractor_name))
-    
+
         try:
             extractor_sources = extractor.extract(result)
         except Exception as e:

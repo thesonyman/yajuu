@@ -22,6 +22,7 @@ def validate_media(context, param, values):
     else:
         return validate_single_media(context, param, values)
 
+
 def validate_single_media(context, param, values):
     '''Parse the passed medias when they are "single", such as movies.'''
 
@@ -45,6 +46,7 @@ def validate_single_media(context, param, values):
         medias.append(('single', media))
 
     return medias
+
 
 def validate_season_media(context, param, values):
     '''Parse the passed medias when they have seasons, such as TV Shows.'''
@@ -98,10 +100,12 @@ def validate_season_media(context, param, values):
 
     return medias
 
+
 def select_media(name, results):
     '''The media constructor smoetimes needs to select'''
 
-    question = inquirer.List('name',
+    question = inquirer.List(
+        'name',
         message="Which title is correct for input '{}'?".format(name),
         choices=list(x.SeriesName for x in results)
     )

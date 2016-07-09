@@ -26,6 +26,7 @@ HTTP_HEADER = {
 
 
 class AnimeChibyExtractor(AnimeExtractor):
+
     def _get_url(self):
         return 'http://www.animechiby.com'
 

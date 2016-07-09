@@ -8,6 +8,7 @@ from .. import unshorten
 
 
 class IceFilmsExtractor(MovieExtractor):
+
     def _get_url(self):
         return 'http://www.icefilms.info'
 
@@ -32,16 +33,19 @@ class IceFilmsExtractor(MovieExtractor):
             self._get_url() + soup.select('iframe#videoframe')[0].get('src')
         )
 
-        referer = self._get_url() + soup.select('iframe#videoframe')[0].get('src')
+        referer = self._get_url() + \
+            soup.select('iframe#videoframe')[0].get('src')
         sources = []
 
         for quality_div in sources_soup.select('.ripdiv'):
             print('=> ' + quality_div.find('b').text)
 
             t = re.search('t=(\d+?)"', sources_soup.prettify()).group(1)
-            results = re.search('var s=(\d+?),m=(\d+?);', sources_soup.prettify())
+            results = re.search(
+                'var s=(\d+?),m=(\d+?);', sources_soup.prettify())
             s, m = results.group(1), results.group(2)
-            sec = re.search('f.lastChild.value="(.+?)"', sources_soup.prettify()).group(1)
+            sec = re.search(
+                'f.lastChild.value="(.+?)"', sources_soup.prettify()).group(1)
 
             for source in quality_div.select('a[onclick]'):
                 id = source.get('onclick')[3:-1]
@@ -50,9 +54,9 @@ class IceFilmsExtractor(MovieExtractor):
 
                 while not success:
                     source_url = self._get_url() + (
-                        '/membersonly/components/com_iceplayer/video.phpAjaxResp.'
-                        'php?s={}&t={}'.format(id, t)
-                    )
+                        '/membersonly/components/com_iceplayer/video.'
+                        'phpAjaxResp.php?s={}&t={}'
+                    ).format(id, t)
 
                     payload = {
                         'id': id,

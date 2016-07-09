@@ -4,6 +4,7 @@ from . import Media, ImdbProvider
 
 
 class Movie(ImdbProvider, Media):
+
     def get_name(self):
         return 'Movie'
 

@@ -26,6 +26,7 @@ logger.propagate = 0
 
 logger.addHandler(handler)
 
+
 def unshorten(url, quality=None):
     '''Will try to locate the correct unshortener by itself.'''
 
@@ -234,7 +235,7 @@ def unshorten_mp4upload(url, quality=None):
 def unshorten_stream_moe(url, quality=None):
     base64_regex = re.compile(r'atob\(\'(.+)\'\)')
     src_regex = re.compile(r'<source src="(.+?)" type="')
-    
+
     html = requests.get(url).text
     logger.debug(html)
     frame_html = str(base64.b64decode(base64_regex.search(html).group(1)))
@@ -298,6 +299,7 @@ def unshorten_google_drive(url, quality=None):
 
     return [(quality, src)]
 
+
 def unshorten_tusfiles(url, quality=None):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
     form = soup.find('form', {'name': 'F1'})
@@ -320,6 +322,7 @@ def unshorten_tusfiles(url, quality=None):
         quality = get_quality(src)
 
     return [(quality, src)]
+
 
 def unshorten_upload_af(url, quality=None):
     if not url.startswith('https'):

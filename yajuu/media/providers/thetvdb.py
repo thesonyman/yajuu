@@ -5,6 +5,7 @@ from yajuu.config import config
 
 
 class TheTvDbProvider:
+
     '''Helper class to get data from thetvdb api.'''
 
     def __eq__(self, other):

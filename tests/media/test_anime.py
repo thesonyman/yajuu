@@ -5,6 +5,7 @@ from yajuu.media import Anime
 
 
 class AnimeTestcase(TestCase):
+
     def test_not_found(self):
         self.assertRaises(Anime.MediaNotFoundException, Anime, '')
 

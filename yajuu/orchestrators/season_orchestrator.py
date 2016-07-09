@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class SeasonOrchestrator(Orchestrator):
+
     def __init__(self, media, seasons, extractors=None):
         self._seasons = seasons
         super().__init__(media, extractors=extractors)

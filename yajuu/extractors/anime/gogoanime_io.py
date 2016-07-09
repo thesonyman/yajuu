@@ -7,6 +7,7 @@ from .. import unshorten
 
 
 class GogoAnimeIoExtractor(AnimeExtractor):
+
     def _get_url(self):
         return 'http://gogoanime.io'
 

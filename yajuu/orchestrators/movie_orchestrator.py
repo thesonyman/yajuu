@@ -3,6 +3,7 @@ from yajuu.extractors import IceFilmsExtractor
 
 
 class MovieOrchestrator(Orchestrator):
+
     def _get_query(self):
         return self.media.metadata['name']
 

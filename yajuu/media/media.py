@@ -8,6 +8,7 @@ import inquirer
 
 
 class Media(metaclass=ABCMeta):
+
     '''Base abstract class for a media. It can be extended to implement for
     example the Movie or TV Show classes.
 
@@ -36,8 +37,10 @@ class Media(metaclass=ABCMeta):
 
         results = results[:10]
 
-        question = inquirer.List('name',
-            message="Which title is correct for input '{}'?".format(query),
+        question = inquirer.List(
+            'name',
+            message="Which title is correct for input '{}'?".format(
+                query),
             choices=list(x[1] for x in results)
         )
 

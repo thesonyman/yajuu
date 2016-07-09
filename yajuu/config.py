@@ -22,7 +22,10 @@ DEFAULT_CONFIG = {
             'anime': {
                 'base': 'Anime',
                 'season': 'Season {season_number:02d}',
-                'episode': '{anime_name} - S{season_number:02d}e{episode_number:03d}.{ext}'
+                'episode': (
+                    '{anime_name} - S{season_number:02d}e{episode_number:03d}.'
+                    '{ext}'
+                )
             },
             'movie': {
                 'base': 'Movies',

@@ -4,7 +4,9 @@ from yajuu.media.season_media import SeasonMedia
 
 
 class DummySeasonMedia(SeasonMedia):
+
     class Episode(SeasonMedia.Episode):
+
         def _get_metadata(self):
             self.metadata['name'] = 'Dummy Episode'
 
@@ -24,13 +26,14 @@ class DummySeasonMedia(SeasonMedia):
         pass
 
     def __eq__(self, other):
-                pass
+        pass
 
     def __ne__(self, other):
         pass
 
 
 class MediaSeasonTestcase(TestCase):
+
     def test_abstract(self):
         self.assertRaises(TypeError, SeasonMedia, '')
 

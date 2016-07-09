@@ -8,94 +8,95 @@ from .. import unshorten
 
 
 class RawrAnimeExtractor(AnimeExtractor):
-	def _get_url(self):
-		return 'http://rawranime.tv'
 
-	def search(self):
-		html = requests.get('http://rawranime.tv/index.php', params={
-			'ajax': 'anime',
-			'do': 'search',
-			's': self.media.metadata['name']
-		}).text.replace('\\', '')
+    def _get_url(self):
+        return 'http://rawranime.tv'
 
-		soup = BeautifulSoup(html, 'html.parser')
+    def search(self):
+        html = requests.get('http://rawranime.tv/index.php', params={
+            'ajax': 'anime',
+            'do': 'search',
+            's': self.media.metadata['name']
+        }).text.replace('\\', '')
 
-		results = []
+        soup = BeautifulSoup(html, 'html.parser')
 
-		for link in soup.find_all('a'):
-			title = link.find('div', {'class': 'quicksearch-title'}).text
-			id = link.get('href')  # With a leading slash
+        results = []
 
-			results += [
-				(title + ' (Sub)', id), (title + ' (Dub)', id)
-			]
+        for link in soup.find_all('a'):
+            title = link.find('div', {'class': 'quicksearch-title'}).text
+            id = link.get('href')  # With a leading slash
 
-		return results
+            results += [
+                (title + ' (Sub)', id), (title + ' (Dub)', id)
+            ]
 
-	def extract(self, season, result):
-		version = 'subbed' if result[0].endswith(' (Sub)') else 'dubbed'
-		url = 'http://rawranime.tv' + result[1] + '?apl=1'
+        return results
 
-		html = requests.get(url).json()['html']
-		soup = BeautifulSoup(html, 'html.parser')
+    def extract(self, season, result):
+        version = 'subbed' if result[0].endswith(' (Sub)') else 'dubbed'
+        url = 'http://rawranime.tv' + result[1] + '?apl=1'
 
-		episodes = []
+        html = requests.get(url).json()['html']
+        soup = BeautifulSoup(html, 'html.parser')
 
-		for episode in soup.find_all('div', {'class': 'ep '}):
-			number_div = episode.find('div', {'class': 'ep-number'})
-			episodes.append((version, result[1], number_div.text))
+        episodes = []
 
-		self.logger.debug('Found {} episodes'.format(len(episodes)))
+        for episode in soup.find_all('div', {'class': 'ep '}):
+            number_div = episode.find('div', {'class': 'ep-number'})
+            episodes.append((version, result[1], number_div.text))
 
-		sources = {}
+        self.logger.debug('Found {} episodes'.format(len(episodes)))
 
-		with concurrent.futures.ThreadPoolExecutor(16) as executor:
-			for number, _sources in executor.map(self.page_worker, episodes):
-				if number not in sources:
-					sources[number] = []
+        sources = {}
 
-				sources[number] += _sources
+        with concurrent.futures.ThreadPoolExecutor(16) as executor:
+            for number, _sources in executor.map(self.page_worker, episodes):
+                if number not in sources:
+                    sources[number] = []
 
-		return sources
+                sources[number] += _sources
 
-	def page_worker(self, data):
-		version, id, number = data
+        return sources
 
-		self.logger.debug('Processing episode {}'.format(number))
+    def page_worker(self, data):
+        version, id, number = data
 
-		id = id[7:]  # Remove '/anime'
+        self.logger.debug('Processing episode {}'.format(number))
 
-		url = 'http://rawranime.tv/watch/{}/episode-{}'.format(id, number)
-		soup = self._get(url)
+        id = id[7:]  # Remove '/anime'
 
-		elements = soup.find_all(
-			lambda x: x.name == 'div' and x.has_attr('data-src') and
-			x.has_attr('data-quality')
-		)
+        url = 'http://rawranime.tv/watch/{}/episode-{}'.format(id, number)
+        soup = self._get(url)
 
-		sources = []
+        elements = soup.find_all(
+            lambda x: x.name == 'div' and x.has_attr('data-src') and
+            x.has_attr('data-quality')
+        )
 
-		for element in elements:
-			if element.get('data-lang') != version:
-				continue
+        sources = []
 
-			quality = int(''.join(
-				x for x in element.get('data-quality') if x.isdigit()
-			))
+        for element in elements:
+            if element.get('data-lang') != version:
+                continue
 
-			src = element.get('data-src')
+            quality = int(''.join(
+                x for x in element.get('data-quality') if x.isdigit()
+            ))
 
-			self.logger.debug('Unshortening {}, quality {}p'.format(
-				src, quality
-			))
+            src = element.get('data-src')
 
-			src = unshorten(src, quality=quality)
+            self.logger.debug('Unshortening {}, quality {}p'.format(
+                src, quality
+            ))
 
-			if src is None:
-				continue
+            src = unshorten(src, quality=quality)
 
-			sources += src
+            if src is None:
+                continue
 
-		self.logger.debug('Done processing episode {}'.format(number))
+            sources += src
 
-		return (int(number), sources)
+        self.logger.debug('Done processing episode {}'.format(number))
+
+        return (int(number), sources)

@@ -8,6 +8,7 @@ from . import AnimeExtractor
 
 
 class HtvanimeExtractor(AnimeExtractor):
+
     def _get_url(self):
         return 'http://htvanime.com'
 

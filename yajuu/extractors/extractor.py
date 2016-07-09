@@ -20,6 +20,7 @@ class abstractstatic(staticmethod):
 
 
 class Extractor(metaclass=ABCMeta):
+
     def __init__(self, media):
         self.session = cfscrape.create_scraper()
         self.media = media
@@ -29,9 +30,11 @@ class Extractor(metaclass=ABCMeta):
             __name__ + '.' + self.__class__.__name__
         )
 
-        formatter = logging.Formatter('%(levelname)s - \033[92m{}\033[0m: %(message)s'.format(
-            self.__class__.__name__
-        ))
+        formatter = logging.Formatter(
+            '%(levelname)s - \033[92m{}\033[0m: %(message)s'.format(
+                self.__class__.__name__
+            )
+        )
 
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)

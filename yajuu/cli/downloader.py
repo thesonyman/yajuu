@@ -39,6 +39,7 @@ def download_single_media(path, media_config, media, orchestrator):
 
     download_file(media, path, media_config['file'], path_params, sources)
 
+
 def download_season_media(path, media_config, media, seasons, orchestrator):
     if config['plex_reload']['enabled']:
         get_plex()
@@ -69,6 +70,7 @@ def download_season_media(path, media_config, media, seasons, orchestrator):
                 sources
             )
 
+
 def get_sources(media, orchestrator):
     logger.info('-> Starting downloads for media {}'.format(
         media.metadata['name']
@@ -78,6 +80,7 @@ def get_sources(media, orchestrator):
 
     logger.debug('The orchestrator just finished.')
     return sources
+
 
 def download_file(media, directory, format, path_params, sources):
     if len(glob.glob(format.format(ext='*', **path_params))) > 0:
@@ -143,6 +146,7 @@ def download_file(media, directory, format, path_params, sources):
 
     logger.info('')
 
+
 def filter_sources(sources):
     minimum_quality = config['media']['minimum_quality']
     maximum_quality = config['media']['maximum_quality']
@@ -160,6 +164,7 @@ def filter_sources(sources):
         good_sources.append((quality, url))
 
     return good_sources
+
 
 def sort_sources(sources):
     '''Sort the available sources by speed.'''
@@ -196,7 +201,7 @@ def sort_sources(sources):
             )
 
             response = requests.get(
-                url, stream=True, headers={'Connection':'close'}
+                url, stream=True, headers={'Connection': 'close'}
             )
             size = 1e6  # Test over 1mb
 

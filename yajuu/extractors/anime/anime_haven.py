@@ -9,6 +9,7 @@ from .. import unshorten
 
 
 class AnimeHavenExtractor(AnimeExtractor):
+
     PAGE_REGEX = re.compile(r'(http://.+/page/)([0-9]+)')
     EPISODE_REGEX = re.compile(r'http://.+-episode-([0-9]+)')
 

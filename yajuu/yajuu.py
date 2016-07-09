@@ -23,7 +23,7 @@ MEDIA_TYPES = {
 def cli():
     # Mute the requests logger for the info level
     if logger.level >= logging.INFO:
-    	logging.getLogger('requests').setLevel(logging.WARNING)
+        logging.getLogger('requests').setLevel(logging.WARNING)
 
 
 @click.group()

@@ -63,6 +63,7 @@ def download(ctx, media, skip_confirmation):
         else:
             download_single_media(*data)
 
+
 def confirm_download(medias, skip_confirmation):
     # First, we print out the medias that will be downloaded, so that the user
     # can confirm them.
@@ -107,6 +108,7 @@ def confirm_download(medias, skip_confirmation):
     else:
         logger.debug('Skipping the confirmation.')
 
+
 def create_orchestrators(ctx, medias):
     # Second step: create the orchestrators. They handle the difficult part:
     # creating the extractors and executing them using threads. We will search
@@ -144,6 +146,7 @@ def create_orchestrators(ctx, medias):
 
     return orchestrators
 
+
 def select_result(extractor, query, message, results):
     extractor_name = type(extractor).__name__
 
@@ -151,14 +154,15 @@ def select_result(extractor, query, message, results):
 
     results = results[:20]
 
-    if len(results)  <= 0:
+    if len(results) <= 0:
         logger.debug('The extractor {} did not find any results.'.format(
             extractor_name
         ))
 
         return None
 
-    question = inquirer.List('result',
+    question = inquirer.List(
+        'result',
         message=message,
         choices=list(x[0] for x in results)
     )

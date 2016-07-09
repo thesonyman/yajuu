@@ -8,12 +8,14 @@ from . import Media
 
 
 class SeasonMedia(Media):
+
     '''Sub-abstract class, child of the Media class, which provides an
     implementation of the season mechanism.
 
     It supports multiple seasons, and implements an episode class.'''
 
     class Episode(metaclass=ABCMeta):
+
         '''To be used with the season media class.'''
 
         def __init__(self, season_number, number):

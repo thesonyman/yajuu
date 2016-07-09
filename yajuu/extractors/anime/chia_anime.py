@@ -7,78 +7,79 @@ from . import AnimeExtractor
 
 
 class ChiaAnimeExtractor(AnimeExtractor):
-	def _get_url(self):
-		return 'http://m.chia-anime.tv'
 
-	def search(self):
-		soup = self._get('http://m.chia-anime.tv/catlist.php', data={
-			'tags': self.media.metadata['name']
-		})
+    def _get_url(self):
+        return 'http://m.chia-anime.tv'
 
-		results = []
+    def search(self):
+        soup = self._get('http://m.chia-anime.tv/catlist.php', data={
+            'tags': self.media.metadata['name']
+        })
 
-		for link in soup.select('div.title > a'):
-			results.append((
-				link.text,
-				('http://m.chia-anime.tv' + link.get('href'))
-			))
+        results = []
 
-		return results
+        for link in soup.select('div.title > a'):
+            results.append((
+                link.text,
+                ('http://m.chia-anime.tv' + link.get('href'))
+            ))
 
-	def extract(self, season, result):
-		soup = self._get(result[1])
-		episodes_select = soup.find('select', {'id': 'id'})
+        return results
 
-		base_url = 'http://m.chia-anime.tv/mw.php?id={}&submit=Watch'
+    def extract(self, season, result):
+        soup = self._get(result[1])
+        episodes_select = soup.find('select', {'id': 'id'})
 
-		episodes = []
-		number_regex = re.compile(r'^Select .+? Episode (\d+)$')
+        base_url = 'http://m.chia-anime.tv/mw.php?id={}&submit=Watch'
 
-		for option in episodes_select.find_all('option'):
-			url = base_url.format(option.get('value'))
+        episodes = []
+        number_regex = re.compile(r'^Select .+? Episode (\d+)$')
 
-			number_regex_result = number_regex.search(option.text.strip())
+        for option in episodes_select.find_all('option'):
+            url = base_url.format(option.get('value'))
 
-			if not number_regex_result:
-				self.logger.warning('Episode at url {} is invalid'.format(
-					url
-				))
+            number_regex_result = number_regex.search(option.text.strip())
 
-				continue
+            if not number_regex_result:
+                self.logger.warning('Episode at url {} is invalid'.format(
+                    url
+                ))
 
-			episodes.append((
-				int(number_regex_result.group(1)),
-				url
-			))
+                continue
 
-			self.logger.debug(base_url.format(option.get('value')))
+            episodes.append((
+                int(number_regex_result.group(1)),
+                url
+            ))
 
-		sources = {}
+            self.logger.debug(base_url.format(option.get('value')))
 
-		with concurrent.futures.ThreadPoolExecutor(16) as executor:
-			for data in executor.map(self._page_worker, episodes):
-				if not data:
-					continue
+        sources = {}
 
-				data = episode_number, episode_sources
+        with concurrent.futures.ThreadPoolExecutor(16) as executor:
+            for data in executor.map(self._page_worker, episodes):
+                if not data:
+                    continue
 
-				if episode_number not in sources:
-					sources[episode_number] = []
+                data = episode_number, episode_sources
 
-				sources[episode_number]+= episode_sources
+                if episode_number not in sources:
+                    sources[episode_number] = []
 
-		import pprint
-		pprint.pprint(sources)
-		import sys
-		sys.exit(0)
-		return sources
+                sources[episode_number] += episode_sources
 
-	def _page_worker(self, data):
-		episode_number, url = data
+        import pprint
+        pprint.pprint(sources)
+        import sys
+        sys.exit(0)
+        return sources
 
-		self.logger.info('Processing episode {}'.format(episode_number))
+    def _page_worker(self, data):
+        episode_number, url = data
 
-		soup = self._get(url)
+        self.logger.info('Processing episode {}'.format(episode_number))
 
-		self.logger.info('Done processing episode {}'.format(episode_number))
-		return []
+        soup = self._get(url)
+
+        self.logger.info('Done processing episode {}'.format(episode_number))
+        return []
