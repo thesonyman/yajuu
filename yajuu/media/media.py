@@ -27,6 +27,10 @@ class Media(metaclass=ABCMeta):
         self._update_metadata(query)
         self.metadata.update({'query': query})
 
+    @abstractmethod
+    def get_name(self):
+        pass
+
     def _select_result(self, query, results):
         '''Provides a base implementation to select a result from a list.'''
 

@@ -4,6 +4,9 @@ from . import Media, ImdbProvider
 
 
 class Movie(ImdbProvider, Media):
+    def get_name(self):
+        return 'Movie'
+
     def _update_metadata(self, query):
         item = self._get_result(query, self._select_result)
 

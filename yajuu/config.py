@@ -34,7 +34,10 @@ DEFAULT_CONFIG = {
         'enabled': False,
         'token': '',
         'base_url': '',
-        'sections': []
+        'sections': {
+            'Anime': [],
+            'Movie': []
+        }
     },
     'misc': {
         'downloader': 'wget {filename} {url}'

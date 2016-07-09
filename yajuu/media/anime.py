@@ -26,6 +26,9 @@ class Anime(TheTvDbProvider, SeasonMedia):
                 **self.metadata
             )
 
+    def get_name(self):
+        return 'Anime'
+
     def _update_metadata(self, query):
         show = self._get_result(query, self._select_result)
 

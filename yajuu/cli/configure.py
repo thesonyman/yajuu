@@ -55,8 +55,6 @@ def plex(only_print):
 
     selected_server = answers['server']
 
-    logger.info('')
-
     server = None
 
     for resource in resources:
@@ -66,18 +64,24 @@ def plex(only_print):
 
     plex = server.connect()
     sections = plex.library.sections()
+    selected_sections = {}
 
-    answers = inquirer.prompt([
-        inquirer.Checkbox(
-            'sections', message='Which sections do you want to reload?',
-            choices=[x.title for x in sections]
-        )
-    ])
+    for media_name in config['plex_reload']['sections']:
+        answers = inquirer.prompt([
+            inquirer.Checkbox(
+                'sections',
+                message=(
+                    'When a(n) {} is download, which section(s) should be '
+                    'reloaded?'
+                ).format(media_name.lower()),
+                choices=[x.title for x in sections]
+            )
+        ])
 
-    if not answers:
-        sys.exit(0)
+        if not answers:
+            sys.exit(0)
 
-    selected_sections = answers['sections']
+        selected_sections[media_name] = answers['sections']
 
     config['plex_reload'] = {
         'enabled': True,
@@ -91,4 +95,4 @@ def plex(only_print):
         logger.info(yaml.dump(print_config, default_flow_style=False))
     else:
         save_config()
-        logger.info('The configuration has been updated!')
+        logger.info('The configuration has been updated.')

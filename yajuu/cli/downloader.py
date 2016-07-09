@@ -37,7 +37,7 @@ def download_single_media(path, media_config, media, orchestrator):
         'movie_date': media.metadata['year']
     }
 
-    download_file(path, media_config['file'], path_params, sources)
+    download_file(media, path, media_config['file'], path_params, sources)
 
 def download_season_media(path, media_config, media, seasons, orchestrator):
     if config['plex_reload']['enabled']:
@@ -65,7 +65,8 @@ def download_season_media(path, media_config, media, seasons, orchestrator):
             }
 
             download_file(
-                season_path, media_config['episode'], path_params, sources
+                media, season_path, media_config['episode'], path_params,
+                sources
             )
 
 def get_sources(media, orchestrator):
@@ -78,7 +79,7 @@ def get_sources(media, orchestrator):
     logger.debug('The orchestrator just finished.')
     return sources
 
-def download_file(directory, format, path_params, sources):
+def download_file(media, directory, format, path_params, sources):
     if len(glob.glob(format.format(ext='*', **path_params))) > 0:
         logger.info('The file already exists.')
         return
@@ -129,8 +130,10 @@ def download_file(directory, format, path_params, sources):
         return
 
     if config['plex_reload']['enabled']:
+        wanted_sections = config['plex_reload']['sections'][media.get_name()]
+
         for section in server.library.sections():
-            if section.title not in config['plex_reload']['sections']:
+            if section.title not in wanted_sections:
                 continue
 
             logger.info('Plex: reloading section "{}"'.format(section.title))
