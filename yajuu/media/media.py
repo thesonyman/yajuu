@@ -19,11 +19,7 @@ class Media(metaclass=ABCMeta):
     class MediaNotFoundException(Exception):
         pass
 
-    def __init__(self, query, select_result=None):
-        self.select_result = (
-            select_result if select_result else self._select_result
-        )
-
+    def __init__(self, query):
         self.metadata = {}
         self._update_metadata(query)
         self.metadata.update({'query': query})

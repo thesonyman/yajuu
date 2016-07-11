@@ -18,6 +18,26 @@ logger = logging.getLogger(__name__)
     help='Only print the configuration as yaml, does not save it.'
 )
 def plex(only_print):
+    account = get_plex_account()
+    plex = get_plex(account)
+    selected_sections = get_selected_sections(plex)
+
+    config['plex_reload'] = {
+        'enabled': True,
+        'token': account.authenticationToken,
+        'base_url': plex.baseurl,
+        'sections': selected_sections
+    }
+
+    if only_print:
+        print_config = {'plex_reload': config['plex_reload']}
+        logger.info(yaml.dump(print_config, default_flow_style=False))
+    else:
+        save_config()
+        logger.info('The configuration has been updated.')
+
+
+def get_plex_account():
     questions = [
         inquirer.Text('username', message="Enter your username"),
         inquirer.Password('password', message="Enter your password")
@@ -39,7 +59,10 @@ def plex(only_print):
         sys.exit(1)
 
     logger.debug('Auth token is {}'.format(account.authenticationToken))
+    return account
 
+
+def get_plex(account):
     resources = account.resources()
 
     answers = inquirer.prompt([
@@ -62,7 +85,10 @@ def plex(only_print):
             server = resource
             break
 
-    plex = server.connect()
+    return server.connect()
+
+
+def get_selected_sections(plex):
     sections = plex.library.sections()
     selected_sections = {}
 
@@ -83,16 +109,4 @@ def plex(only_print):
 
         selected_sections[media_name] = answers['sections']
 
-    config['plex_reload'] = {
-        'enabled': True,
-        'token': account.authenticationToken,
-        'base_url': plex.baseurl,
-        'sections': selected_sections
-    }
-
-    if only_print:
-        print_config = {'plex_reload': config['plex_reload']}
-        logger.info(yaml.dump(print_config, default_flow_style=False))
-    else:
-        save_config()
-        logger.info('The configuration has been updated.')
+    return selected_sections
