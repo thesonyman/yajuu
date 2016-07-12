@@ -3,6 +3,7 @@ import os
 import xml.dom.minidom
 import glob
 import logging
+import time
 
 import click
 import shlex
@@ -62,6 +63,12 @@ def download(ctx, media, skip_confirmation):
             download_season_media(*data)
         else:
             download_single_media(*data)
+
+    logger.info('\nDone! Yajuu took {} to complete.'.format(
+        time.strftime('%H hours, %M minutes and %S seconds', time.gmtime(
+            time.time() - ctx.obj['START_TIME']
+        ))
+    ))
 
 
 def confirm_download(medias, skip_confirmation):

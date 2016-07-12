@@ -1,4 +1,5 @@
 import logging
+import time
 
 import click
 import click_log
@@ -32,6 +33,7 @@ def cli():
 )
 @click.pass_context
 def media(ctx, media_type):
+    ctx.obj['START_TIME'] = time.time()
     ctx.obj['MEDIA_TYPE'] = media_type
     ctx.obj['MEDIA_CLASS'] = MEDIA_TYPES[media_type][0]
     ctx.obj['ORCHESTRATOR_CLASS'] = MEDIA_TYPES[media_type][1]
