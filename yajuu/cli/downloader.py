@@ -6,6 +6,7 @@ import xml.dom.minidom
 import urllib.parse
 
 import shlex
+import magic
 import requests
 import plexapi.server
 
@@ -122,11 +123,28 @@ def download_file(media, directory, format, path_params, sources):
         logger.debug(command)
 
         if os.system(command) == 0:
+            # Check the download using magic
             logger.debug('The download succeeded')
-            downloaded = True
-            break
+
+            mimetype = magic.from_file(path, mime=True)
+            logger.debug(mimetype)
+
+            if mimetype.startswith('video'):
+                downloaded = True
+                break
+            else:
+                logger.warning('The downloaded file has a wrong mimetype.')
         else:
             logger.warning('The download failed')
+
+            # Else, delete the remaining file (useful for aria2, wget, ..)
+            for to_delete in glob.glob(path + '*'):
+                try:
+                    os.remove(os.path.join(directory, to_delete))
+                    logger.debug('Deleted unnecessary {}'.format(to_delete))
+                except OSError as exception:
+                    logger.error(exception)
+                    logger.warning('Could not delete {}'.format(to_delete))
 
     if not downloaded:
         logger.error('No valid sources were discovered.')

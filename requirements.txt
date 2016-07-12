@@ -16,6 +16,7 @@ inquirer==2.1.7
 lockfile==0.12.2
 PlexAPI==2.0.1
 PyExecJS==1.4.0
+python-magic==0.4.12
 pytvdbapi==0.5.0
 PyYAML==3.11
 readchar==0.7
