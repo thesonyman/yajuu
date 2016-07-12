@@ -43,7 +43,7 @@ DEFAULT_CONFIG = {
         }
     },
     'misc': {
-        'downloader': 'wget {filename} {url}'
+        'downloader': 'wget -q --show-progress -O {filepath} {url}'
     }
 }
 
