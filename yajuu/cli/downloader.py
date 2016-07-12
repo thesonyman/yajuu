@@ -210,6 +210,15 @@ def sort_sources(sources):
         sources = by_quality[quality]
         chunk_qualities = []
 
+        if len(sources) <= 1:
+            logger.debug(
+                'Only one source available for this quality, skipping network '
+                'speed sort.'
+            )
+
+            yield (quality, sources[0])
+            continue
+
         for url in sources:
             netloc = urllib.parse.urlparse(url).netloc
             offset = max_length - len(netloc)
