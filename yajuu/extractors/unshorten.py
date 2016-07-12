@@ -14,6 +14,8 @@ import requests
 from bs4 import BeautifulSoup
 import logging
 
+from .unshorteners import *
+
 logger = logging.getLogger(__name__ + '.' + 'unshorten')
 
 formatter = logging.Formatter('%(levelname)s: [UNSHORTEN] %(message)s')
@@ -40,7 +42,8 @@ def unshorten(url, quality=None):
         'bakavideo.tv': unshorten_bakavideo,
         'drive.google.com': unshorten_google_drive,
         'tusfiles.net': unshorten_tusfiles,
-        'upload.af': unshorten_upload_af
+        'upload.af': unshorten_upload_af,
+        'openload.co': unshorten_openload
     }
 
     host = urllib.parse.urlsplit(url).netloc
@@ -58,37 +61,6 @@ def unshorten(url, quality=None):
         logger.warning('Could not unshorten {}'.format(url))
 
     return None
-
-
-def get_quality(stream_url, quote=True):
-    '''Using ffprobe, gets the given stream url quality.'''
-
-    logger.debug('Getting quality of stream at {}'.format(stream_url))
-
-    path = shlex.quote(stream_url) if quote else stream_url
-
-    command = [
-        'ffprobe', '-i', path, '-show_entries', 'stream=height', '-v', 'quiet',
-        '-of', 'csv=p=0'
-    ]
-
-    logger.debug('Executing {}'.format(command))
-
-    retries = 0
-    raw_output = None
-
-    while retries < 5:
-        try:
-            raw_output = subprocess.check_output(command)
-            break
-        except subprocess.CalledProcessError as e:
-            logger.error(e)
-            retries += 1
-
-    if not raw_output:
-        return 0
-
-    return int(''.join(x for x in raw_output.decode('utf-8') if x.isdigit()))
 
 
 def unshorten_tiwi_kiwi(url, quality=None):
