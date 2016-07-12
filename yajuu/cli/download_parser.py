@@ -32,9 +32,7 @@ def validate_single_media(context, param, values):
         query = value.strip()
 
         try:
-            media = context.obj['MEDIA_CLASS'](
-                query, select_result=select_media
-            )
+            media = context.obj['MEDIA_CLASS'](query)
         except Media.MediaNotFoundException:
             raise click.BadParameter('the media {} was not found'.format(
                 query
@@ -66,9 +64,7 @@ def validate_season_media(context, param, values):
         query = parts[0].strip()
 
         try:
-            media = context.obj['MEDIA_CLASS'](
-                query, select_result=select_media
-            )
+            media = context.obj['MEDIA_CLASS'](query)
         except Media.MediaNotFoundException:
             raise click.BadParameter('the media {} was not found'.format(
                 query

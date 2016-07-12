@@ -38,9 +38,9 @@ class SeasonMedia(Media):
             pattern = self.file_path.format(ext='*')
             return len(glob(pattern)) > 0
 
-    def __init__(self, query, select_result=None):
+    def __init__(self, query):
         self._seasons = {}
-        super().__init__(query, select_result=select_result)
+        super().__init__(query)
 
     def __iter__(self):
         return iter(self._seasons.items())
