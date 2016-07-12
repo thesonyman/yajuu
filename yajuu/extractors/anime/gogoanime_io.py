@@ -40,8 +40,7 @@ class GogoAnimeIoExtractor(AnimeExtractor):
             ))
 
             # We need to flatten the array
-            links = itertools.chain.from_iterable(links_by_block)
-
+            links = list(itertools.chain.from_iterable(links_by_block))
             self.logger.debug('Found {} links!'.format(len(links)))
 
             sources = {}
@@ -84,12 +83,12 @@ class GogoAnimeIoExtractor(AnimeExtractor):
         soup = self._get(url)
         episode_number = int(soup.select('#default_ep')[0].get('value'))
 
-        self.logger.info('Processing episode', episode_number)
+        self.logger.info('Processing episode {}'.format(episode_number))
 
         sources = unshorten(
             soup.select('div.download-anime > a')[0].get('href')
         )
 
-        self.logger.info('Done processing episode', episode_number)
+        self.logger.info('Done processing episode {}'.format(episode_number))
 
         return (episode_number, sources)
