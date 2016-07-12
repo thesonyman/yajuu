@@ -23,10 +23,14 @@ It's made to be simple to use, just see it in action:
  - [License](#license)
 
 ## Installation
+To install from the master branch:
 ```bash
-git clone https://github.com/vivescere/yajuu.git
-cd yajuu
-sudo python setup.py install
+pip install git+https://github.com/vivescere/yajuu.git
+```
+
+Or, from the development branch:
+```bash
+pip install git+https://github.com/vivescere/yajuu.git@develop
 ```
 
 # Supported medias and websites
