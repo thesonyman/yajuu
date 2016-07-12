@@ -58,7 +58,9 @@ def download_season_media(path, media_config, media, seasons, orchestrator):
         logger.info('Downloading season {}'.format(season))
 
         for episode_number, sources in season_sources.items():
-            logger.info('Downloading episode {}'.format(episode_number))
+            logger.info('Downloading episode {}/{} of season {}'.format(
+                episode_number, len(media._seasons[season]), season
+            ))
 
             path_params = {
                 'anime_name': media.metadata['name'],
