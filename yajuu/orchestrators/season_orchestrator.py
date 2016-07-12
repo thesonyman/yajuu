@@ -27,7 +27,7 @@ class SeasonOrchestrator(Orchestrator):
         for season in self._seasons:
             extractors = self._extractors[season].copy()
 
-            for extractor in extractors:
+            for extractor, results in self._get_search_method(extractors):
                 select_method = (
                     self._select_result if not select_result else select_result
                 )
@@ -40,7 +40,7 @@ class SeasonOrchestrator(Orchestrator):
 
                 # Sort the results by similarity with the media name
                 results = sorted(
-                    extractor.search(),
+                    results,
                     key=lambda x: difflib.SequenceMatcher(
                         a=query, b=x[0].lower()
                     ).ratio(),

@@ -28,7 +28,7 @@ class Orchestrator(metaclass=ABCMeta):
     def search(self, select_result=None):
         extractors = self._extractors.copy()
 
-        for extractor in extractors:
+        for extractor, results in self._get_search_method(extractors):
             select_method = (
                 self._select_result if not select_result else select_result
             )
@@ -37,7 +37,7 @@ class Orchestrator(metaclass=ABCMeta):
 
             # Sort the results by similarity with the media name
             results = sorted(
-                extractor.search(),
+                results,
                 key=lambda x: difflib.SequenceMatcher(
                     a=query, b=x[0].lower()
                 ).ratio(),
@@ -64,6 +64,30 @@ class Orchestrator(metaclass=ABCMeta):
             print('')
 
         self.searched = True
+
+    def _get_search_method(self, extractors):
+        if logger.getEffectiveLevel() == logging.DEBUG:
+            return self._sequential_search(extractors)
+        else:
+            return self._threaded_search(extractors)
+
+    def _sequential_search(self, extractors):
+        for extractor in extractors:
+            yield (extractor, extractor.search())
+
+    def _threaded_search(self, extractors):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
+            futures = [
+                executor.submit(self._threaded_search_worker, s)
+                for s in extractors
+            ]
+
+            for future in concurrent.futures.as_completed(futures):
+                yield future.result()
+
+    def _threaded_search_worker(self, extractor):
+        results = extractor.search()
+        return (extractor, results)
 
     def _select_result(self, extractor, query, message, results):
         # Get the correct result
