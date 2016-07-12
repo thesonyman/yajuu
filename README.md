@@ -36,12 +36,26 @@ pip install git+https://github.com/vivescere/yajuu.git@develop
 # Supported medias and websites
 Here is the complete list:
  - Animes:
-  - [http://www.animechiby.com](http://www.animechiby.com)
-  - [http://animehaven.org](http://animehaven.org)
-  - [http://gogoanime.io](http://gogoanime.io)
-  - [http://htvanime.com](http://htvanime.com)
-  - [http://www.masterani.me](http://www.masterani.me)
-  - [http://rawranime.tv](http://rawranime.tv)
+  - [animechiby.com](http://www.animechiby.com)
+  - [animehaven.org](http://animehaven.org)
+  - [gogoanime.io](http://gogoanime.io)
+  - [htvanime.com](http://htvanime.com)
+  - [masterani.me](http://www.masterani.me)
+  - [rawranime.tv](http://rawranime.tv)
+ - Movies
+  - [icefilms.info](http://www.icefilms.info)
+
+And here is the list of the media hosting sites from which the files can be extracted:
+ - [tiwi.kiwi](http://tiwi.kiwi/)
+ - [solidfiles.com](https://www.solidfiles.com/)
+ - [vidstream.io](http://vidstream.io/)
+ - [mp4upload.com](http://mp4upload.com/)
+ - [stream.moe](https://stream.moe/)
+ - [bakavideo.tv](https://bakavideo.tv/)
+ - [drive.google.com](https://drive.google.com/drive/#)
+ - [tusfiles.net](http://tusfiles.net/)
+ - [upload.af](https://upload.af/)
+ - [openload.co](https://openload.co/)
 
 The list of the sites that are to be added next is available on the project [trello board](https://trello.com/c/EhsCIloT/3-sites-to-support).
 
