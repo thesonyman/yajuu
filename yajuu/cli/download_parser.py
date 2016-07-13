@@ -4,11 +4,12 @@ import sys
 
 import click
 import pytvdbapi
-import inquirer
 
 from yajuu.media import Media, SeasonMedia
+from . import Asker
 
 logger = logging.getLogger(__name__)
+asker = Asker.factory()
 
 
 def validate_media(context, param, values):
@@ -100,20 +101,7 @@ def validate_season_media(context, param, values):
 def select_media(name, results):
     '''The media constructor smoetimes needs to select'''
 
-    question = inquirer.List(
-        'name',
-        message="Which title is correct for input '{}'?".format(name),
-        choices=list(x.SeriesName for x in results)
+    return asker.select_one(
+        "Which title is correct for input '{}'?".format(name),
+        [(x.SeriesName, x) for x in results]
     )
-
-    answers = inquirer.prompt([question])
-
-    # If the user aborted
-    if not answers:
-        sys.exit(0)
-
-    for result in results:
-        if result.SeriesName == answers['name']:
-            return result
-
-    return None

@@ -4,7 +4,9 @@ behavior of all media.'''
 from abc import ABCMeta, abstractmethod
 import sys
 
-import inquirer
+from yajuu.cli import Asker
+
+asker = Asker.factory()
 
 
 class Media(metaclass=ABCMeta):
@@ -33,24 +35,10 @@ class Media(metaclass=ABCMeta):
 
         results = results[:10]
 
-        question = inquirer.List(
-            'name',
-            message="Which title is correct for input '{}'?".format(
-                query),
-            choices=list(x[1] for x in results)
+        return asker.select_one(
+            "Which title is correct for input '{}'?".format(query),
+            [(x[1], x[0]) for x in results]
         )
-
-        answers = inquirer.prompt([question])
-
-        # If the user aborted
-        if not answers:
-            sys.exit(0)
-
-        for result in results:
-            if result[1] == answers['name']:
-                return result[0]
-
-        return None
 
     @abstractmethod
     def __eq__(self, other):

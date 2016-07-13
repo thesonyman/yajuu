@@ -8,15 +8,16 @@ import time
 import click
 import shlex
 import requests
-import inquirer
 import tabulate
 
 from .download_parser import validate_media
 from yajuu.media import Media, SeasonMedia
 from yajuu.config import config
+from . import Asker
 from .downloader import download_single_media, download_season_media
 
 logger = logging.getLogger(__name__)
+asker = Asker.factory()
 
 
 @click.command()
@@ -104,12 +105,9 @@ def confirm_download(medias, skip_confirmation):
         ) + '\n')
 
     if not skip_confirmation:
-        confirm_question = inquirer.Confirm(
-            'continue', message='Do you wish to start the downloads?',
-            default=True
-        )
-
-        if not inquirer.prompt([confirm_question])['continue']:
+        if not asker.confirm(
+            'Do you wish to start the downloads?', default=True
+        ):
             logger.debug('Exiting program')
             sys.exit(0)
     else:
@@ -168,19 +166,4 @@ def select_result(extractor, query, message, results):
 
         return None
 
-    question = inquirer.List(
-        'result',
-        message=message,
-        choices=list(x[0] for x in results)
-    )
-
-    answers = inquirer.prompt([question])
-
-    if not answers or not answers['result']:
-        return None
-
-    for result in results:
-        if result[0] == answers['result']:
-            return result
-
-    return None
+    return asker.select_one(message, results)

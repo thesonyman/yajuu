@@ -47,16 +47,18 @@ class SeasonOrchestrator(Orchestrator):
                     reverse=True  # Better first
                 )
 
-                result = select_method(extractor, query, (
-                    'Please select the correct result for the media "{}", '
-                    'season {}, website "{}"'.format(
-                        self.media.metadata['name'], season,
-                        extractor._get_url()
-                    )
-                ), results)
+                message = (
+                    'Please select the correct result for the media "{}"'
+                    ', season {}, website "{}"'
+                ).format(
+                    self.media.metadata['name'], season,
+                    extractor._get_url()
+                )
+
+                result = select_method(extractor, query, message, results)
 
                 if result:
-                    self._extractors[season][extractor] = result
+                    self._extractors[season][extractor] = (extractor, result)
                 else:
                     del self._extractors[season][extractor]
 

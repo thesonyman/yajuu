@@ -47,17 +47,15 @@ class Orchestrator(metaclass=ABCMeta):
             message = (
                 'Please select the correct result for the media "{}", on '
                 'website {}'
+            ).format(
+                self.media.metadata['name'],
+                extractor._get_url()
             )
 
-            result = select_result(extractor, query, (
-                message.format(
-                    self.media.metadata['name'],
-                    extractor._get_url()
-                )
-            ), results)
+            result = select_result(extractor, query, message, results)
 
             if result:
-                self._extractors[extractor] = result
+                self._extractors[extractor] = (extractor, result)
             else:
                 del self._extractors[extractor]
 
