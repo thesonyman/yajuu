@@ -4,13 +4,15 @@ import glob
 import time
 import xml.dom.minidom
 import urllib.parse
+import platform
+import re
 
-import shlex
 import magic
 import requests
 import plexapi.server
 
 from yajuu.config import config
+from . import quote
 
 logger = logging.getLogger(__name__)
 server = None
@@ -109,7 +111,7 @@ def download_file(media, directory, format, path_params, sources):
         os.makedirs(directory)
 
     # Precompile the command params
-    command_params = {k: shlex.quote(v) for k, v in {
+    command_params = {k: quote(v) for k, v in {
         'dirname': directory,
         'filename': filename,
         'filepath': path
@@ -125,7 +127,7 @@ def download_file(media, directory, format, path_params, sources):
             quality, netloc
         ))
 
-        command_params['url'] = shlex.quote(url)
+        command_params['url'] = quote(url)
         command = config['misc']['downloader'].format(**command_params)
 
         logger.debug(command_params)

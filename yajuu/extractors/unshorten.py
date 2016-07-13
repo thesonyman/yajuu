@@ -8,7 +8,6 @@ import subprocess
 import base64
 import time
 
-import shlex
 import execjs
 import requests
 from bs4 import BeautifulSoup

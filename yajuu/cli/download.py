@@ -6,7 +6,6 @@ import logging
 import time
 
 import click
-import shlex
 import requests
 import tabulate
 

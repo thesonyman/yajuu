@@ -1,9 +1,8 @@
 import logging
 import subprocess
 
-import shlex
-
 from yajuu.config import config
+from yajuu.cli import quote
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +12,7 @@ def get_quality(stream_url, quote=True):
 
     logger.debug('Getting quality of stream at {}'.format(stream_url))
 
-    path = shlex.quote(stream_url) if quote else stream_url
+    path = quote(stream_url) if quote else stream_url
 
     command = [
         'ffprobe', '-i', path, '-show_entries', 'stream=height', '-v', 'quiet',
