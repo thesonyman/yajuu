@@ -102,7 +102,10 @@ def download_file(media, directory, format, path_params, sources):
     # If the platform is windows, some characters need to be removed
     if platform.system() == 'Windows':
         filename = re.sub(r'[/\\:*?"<>|]', '', filename)
-        directory = re.sub(r'[/:*?"<>|]', '', directory)
+
+        # We need to exclude the first part, C:, D:, ..
+        drive, relative = os.path.splitdrive(directory)
+        directory = os.path.join(drive, re.sub(r'[/:*?"<>|]', '', relative))
 
     path = os.path.join(directory, filename)
     logger.debug('Cleaned path is {}'.format(path))
