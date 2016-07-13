@@ -96,7 +96,14 @@ def download_file(media, directory, format, path_params, sources):
 
     # Since we don't check the extension yet, we can move this out of the loop
     filename = format.format(ext='mp4', **path_params)
+
+    # If the platform is windows, some characters need to be removed
+    if platform.system() == 'Windows':
+        filename = re.sub(r'[/\\:*?"<>|]', '', filename)
+        directory = re.sub(r'[/:*?"<>|]', '', directory)
+
     path = os.path.join(directory, filename)
+    logger.debug('Cleaned path is {}'.format(path))
 
     if not os.path.exists(directory):
         os.makedirs(directory)
