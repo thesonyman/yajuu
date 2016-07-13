@@ -43,7 +43,8 @@ DEFAULT_CONFIG = {
         }
     },
     'misc': {
-        'downloader': 'wget -q --show-progress -O {filepath} {url}'
+        'downloader': 'wget -q --show-progress -O {filepath} {url}',
+        'ffprobe_timeout': 10
     }
 }
 

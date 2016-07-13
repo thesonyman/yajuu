@@ -3,6 +3,8 @@ import subprocess
 
 import shlex
 
+from yajuu.config import config
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,7 +27,9 @@ def get_quality(stream_url, quote=True):
 
     while retries < 5:
         try:
-            raw_output = subprocess.check_output(command)
+            raw_output = subprocess.check_output(
+                command, timeout=config['misc']['ffprobe_timeout']
+            )
             break
         except subprocess.CalledProcessError as e:
             logger.error(e)
