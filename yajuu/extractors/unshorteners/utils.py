@@ -2,21 +2,18 @@ import logging
 import subprocess
 
 from yajuu.config import config
-from yajuu.cli import quote
 
 logger = logging.getLogger(__name__)
 
 
-def get_quality(stream_url, quote=True):
+def get_quality(stream_url):
     '''Using ffprobe, gets the given stream url quality.'''
 
     logger.debug('Getting quality of stream at {}'.format(stream_url))
 
-    path = quote(stream_url) if quote else stream_url
-
     command = [
-        'ffprobe', '-i', path, '-show_entries', 'stream=height', '-v', 'quiet',
-        '-of', 'csv=p=0'
+        'ffprobe', '-i', stream_url, '-show_entries', 'stream=height', '-v',
+        'quiet', '-of', 'csv=p=0'
     ]
 
     logger.debug('Executing {}'.format(command))
