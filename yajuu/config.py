@@ -17,7 +17,7 @@ DEFAULT_CONFIG = {
         'maximum_quality': 0
     },
     'paths': {
-        'base': os.path.expanduser('~/Videos'),
+        'base': os.path.expanduser(os.path.join('~', 'Videos')),
         'medias': {
             'anime': {
                 'base': 'Anime',
@@ -43,7 +43,7 @@ DEFAULT_CONFIG = {
         }
     },
     'misc': {
-        'downloader': 'wget -q --show-progress -O {filepath} {url}',
+        'downloader': 'curl -L -o {filepath} -# {url}',
         'ffprobe_timeout': 10
     }
 }
