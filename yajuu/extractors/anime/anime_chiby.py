@@ -115,8 +115,6 @@ class AnimeChibyExtractor(AnimeExtractor):
         return resp_uri
 
     def extract(self, season, result):
-        sources = {}
-
         with concurrent.futures.ThreadPoolExecutor(16) as executor:
             # The website offer two kinds of links. The first one offer
             # directly the episodes as the links. The second redirects to a
@@ -160,20 +158,6 @@ class AnimeChibyExtractor(AnimeExtractor):
                 second_case_links
             ))
 
-            for episode_number, episode_sources in (
-                x for x in first_case_sources + second_case_sources
-                if x is not None
-            ):
-                if not episode_sources:
-                    continue
-
-                if episode_number not in sources:
-                    sources[episode_number] = []
-
-                sources[episode_number] += episode_sources
-
-        return sources
-
     def map_first_case(self, data):
         '''For the first case, get the real link and extract the episode
         number.'''
@@ -191,20 +175,11 @@ class AnimeChibyExtractor(AnimeExtractor):
             episode_number
         ))
 
-        results = (episode_number, unshorten(link))
-
-        if results:
-            self.logger.debug('Episode {}: found {} results'.format(
-                episode_number, len(results)
-            ))
-        else:
-            self.logger.debug('Episode {}: found no results')
+        self._add_sources(episode_number, unshorten(link))
 
         self.logger.info('Done Processing episode {}'.format(
             episode_number
         ))
-
-        return results
 
     def map_second_case(self, episode_link):
         '''For the second, get the page (below this method) and then extract
@@ -230,20 +205,8 @@ class AnimeChibyExtractor(AnimeExtractor):
             episode_link.get('href')
         )
 
-        _sources = unshorten(episode_link)
+        self._add_sources(episode_number, unshorten(episode_link))
 
         self.logger.info('[AnimeChiby] Finished processing episode {}'.format(
             episode_number
         ))
-
-        if _sources:
-            self.logger.debug('Episode {}: found {} sources'.format(
-                episode_number, len(_sources)
-            ))
-        else:
-            self.logger.debug('Episode {}: found no sources')
-
-        if not _sources:
-            return None
-
-        return (episode_number, _sources)

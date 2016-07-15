@@ -8,6 +8,8 @@ import requests
 import cfscrape
 from bs4 import BeautifulSoup
 
+from yajuu.media import SourceList
+
 
 class abstractstatic(staticmethod):
     __slots__ = ()
@@ -25,6 +27,7 @@ class Extractor(metaclass=ABCMeta):
         self.session = cfscrape.create_scraper()
         self.media = media
         self.links = []
+        self.sources = SourceList()
 
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__

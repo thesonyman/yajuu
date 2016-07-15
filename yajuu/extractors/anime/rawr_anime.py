@@ -61,6 +61,7 @@ class RawrAnimeExtractor(AnimeExtractor):
 
     def page_worker(self, data):
         version, id, number = data
+        number = int(number)
 
         self.logger.debug('Processing episode {}'.format(number))
 
@@ -73,8 +74,6 @@ class RawrAnimeExtractor(AnimeExtractor):
             lambda x: x.name == 'div' and x.has_attr('data-src') and
             x.has_attr('data-quality')
         )
-
-        sources = []
 
         for element in elements:
             if element.get('data-lang') != version:
@@ -90,13 +89,6 @@ class RawrAnimeExtractor(AnimeExtractor):
                 src, quality
             ))
 
-            src = unshorten(src, quality=quality)
-
-            if src is None:
-                continue
-
-            sources += src
+            self._add_sources(number, unshorten(src, quality=quality))
 
         self.logger.debug('Done processing episode {}'.format(number))
-
-        return (int(number), sources)

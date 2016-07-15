@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from . import AnimeExtractor
 from .. import unshorten
+from yajuu.media import Source
 
 
 class AnimeHavenExtractor(AnimeExtractor):
@@ -77,13 +78,7 @@ class AnimeHavenExtractor(AnimeExtractor):
                 episodes += completed.result()
 
             # Second step, we get all the available sources.
-            sources = {}
-
-            for source in executor.map(self.episode_worker, episodes):
-                if source:
-                    sources[source[0]] = source[1]
-
-        return sources
+            list(executor.map(self.episode_worker, episodes))
 
     def page_worker(self, url):
         '''Extract the links to all the anime from the current page.'''
@@ -148,8 +143,6 @@ class AnimeHavenExtractor(AnimeExtractor):
             for x in download_div.find_all('a')
         )
 
-        _sources = []
-
         for quality_span, url in download_links:
             # For certain videos, the download link is available on the
             # website. We can directly fetch those links.
@@ -158,26 +151,10 @@ class AnimeHavenExtractor(AnimeExtractor):
                     ''.join(x for x in quality_span.text if x.isdigit())
                 )
 
-                _sources.append((quality, url))
-
+                self._add_source(episode_number, source)
                 continue
 
             # Else, we just try to use our unshortener
-            __sources = unshorten(url)
-
-            if not __sources:
-                self.logger.warning('One source was unshortenable: {}'.format(
-                    url
-                ))
-
-                continue
-
-            _sources += __sources
-
-        self.logger.debug('Episode {}: found {} sources'.format(
-            episode_number, len(_sources)
-        ))
+            self._add_sources(episode_number, unshorten(url))
 
         self.logger.info('Done processing episode {}'.format(episode_number))
-
-        return (episode_number, _sources)

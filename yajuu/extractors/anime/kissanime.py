@@ -9,6 +9,7 @@ import requests
 import bs4
 
 from . import AnimeExtractor
+from yajuu.media import Source
 
 
 class KissAnimeExtractor(AnimeExtractor):
@@ -54,19 +55,10 @@ class KissAnimeExtractor(AnimeExtractor):
         links = soup.select('table a[href^="/Anime/"]')
 
         with concurrent.futures.ThreadPoolExecutor(16) as executor:
-            for returned in executor.map(
-                    self.episode_worker,
-                    soup.select('table a[href^="/Anime/"]')
-            ):
-                if not returned:
-                    continue
-
-                episode_number, extractor_sources = returned
-
-                if episode_number not in sources:
-                    sources[episode_number] = []
-
-                sources[episode_number] += extractor_sources
+            list(executor.map(
+                self.episode_worker,
+                soup.select('table a[href^="/Anime/"]')
+            ))
 
         return sources
 
@@ -107,13 +99,10 @@ class KissAnimeExtractor(AnimeExtractor):
 
         quality_select = episode_soup.select('select#selectQuality')[0]
 
-        sources = []
-
         for option in quality_select.select('option'):
             quality = int(self.QUALITY_REGEX.search(option.text).group(1))
             src = base64.b64decode(option.get('value')).decode('utf-8')
-            sources.append((quality, src))
+            source = Source(src, quality)
+            self._add_source(episode_number, source)
 
         self.logger.info('Done Processing episode {}'.format(episode_number))
-
-        return (episode_number, sources)

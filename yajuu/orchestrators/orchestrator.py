@@ -3,6 +3,8 @@ import difflib
 from abc import ABCMeta, abstractmethod
 import concurrent.futures
 
+from yajuu.media import SourceList
+
 logger = logging.getLogger(__name__)
 
 
@@ -14,6 +16,7 @@ class Orchestrator(metaclass=ABCMeta):
     def __init__(self, media, extractors=None):
         self.media = media
         self.searched = False
+        self.sources = SourceList()
 
         if extractors is None:
             self._extractors = self._create_extractors(
@@ -127,22 +130,16 @@ class Orchestrator(metaclass=ABCMeta):
         if not self.searched:
             raise self.NOT_SEARCHED_EXCEPTION
 
-        sources = []
-
         with concurrent.futures.ThreadPoolExecutor(6) as executor:
             executors_sources = executor.map(
                 self._map_extractor_sources, self._extractors.items()
             )
 
-            executors_sources = list(executors_sources)
+            for sources in executors_sources:
+                if sources:
+                    self.sources += sources
 
-            if executors_sources:
-                # Since the list needs to be flattened
-                for _sources in executors_sources:
-                    if _sources:
-                        sources += _sources
-
-        return sources
+        return self.sources
 
     def _map_extractor_sources(self, data):
         extractor, result = data
@@ -151,7 +148,8 @@ class Orchestrator(metaclass=ABCMeta):
         logger.info('[{}] Starting extractor'.format(extractor_name))
 
         try:
-            extractor_sources = extractor.extract(result)
+            extractor.extract(result)
+            extractor_sources = extractor.sources
         except Exception as e:
             logger.exception('The extractor {} failed'.format(extractor_name))
             extractor_sources = None

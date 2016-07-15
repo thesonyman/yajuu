@@ -54,25 +54,8 @@ class ChiaAnimeExtractor(AnimeExtractor):
 
             self.logger.debug(base_url.format(option.get('value')))
 
-        sources = {}
-
         with concurrent.futures.ThreadPoolExecutor(16) as executor:
-            for data in executor.map(self._page_worker, episodes):
-                if not data:
-                    continue
-
-                data = episode_number, episode_sources
-
-                if episode_number not in sources:
-                    sources[episode_number] = []
-
-                sources[episode_number] += episode_sources
-
-        import pprint
-        pprint.pprint(sources)
-        import sys
-        sys.exit(0)
-        return sources
+            list(executor.map(self._page_worker, episodes))
 
     def _page_worker(self, data):
         episode_number, url = data
@@ -82,4 +65,3 @@ class ChiaAnimeExtractor(AnimeExtractor):
         soup = self._get(url)
 
         self.logger.info('Done processing episode {}'.format(episode_number))
-        return []

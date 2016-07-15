@@ -20,3 +20,6 @@ class Movie(ImdbProvider, Media):
 
     def download(self):
         pass
+
+    def get_file_path(self):
+        pass

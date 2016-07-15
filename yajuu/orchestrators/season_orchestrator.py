@@ -3,6 +3,7 @@ import difflib
 import logging
 
 from . import Orchestrator
+from yajuu.media import SourceList
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +13,7 @@ class SeasonOrchestrator(Orchestrator):
     def __init__(self, media, seasons, extractors=None):
         self._seasons = seasons
         super().__init__(media, extractors=extractors)
+        self.sources = {}
 
     def _create_extractors(self, extractors):
         _extractors = {}
@@ -68,28 +70,25 @@ class SeasonOrchestrator(Orchestrator):
         if not self.searched:
             raise self.NOT_SEARCHED_EXCEPTION
 
-        sources = {}
-
         for season in self._seasons:
-            sources[season] = {}
+            self.sources[season] = {}
 
             with concurrent.futures.ThreadPoolExecutor(6) as executor:
-                executors_sources = executor.map(self._map_extractor_sources, (
-                    (x[0], season, x[1])
-                    for x in self._extractors[season].items()
-                ))
-
-                for season, executor_sources in executors_sources:
-                    if not executor_sources:
+                for sources in executor.map(
+                    self._map_extractor_sources,
+                    ((extractor, season, result)
+                     for extractor, result in self._extractors[season].items())
+                ):
+                    if not sources:
                         continue
 
-                    for ep_number, episode_sources in executor_sources.items():
-                        if ep_number not in sources[season]:
-                            sources[season][ep_number] = []
+                    for identifier, source_list in sources.items():
+                        if identifier not in self.sources[season]:
+                            self.sources[season][identifier] = SourceList()
 
-                        sources[season][ep_number] += episode_sources
+                        self.sources[season][identifier] += source_list
 
-        return sources
+        return self.sources
 
     def _map_extractor_sources(self, data):
         extractor, season, result = data
@@ -98,11 +97,12 @@ class SeasonOrchestrator(Orchestrator):
         logger.info('INFO: [{}] Starting extractor'.format(extractor_name))
 
         try:
-            extractor_sources = extractor.extract(season, result)
+            extractor.extract(season, result)
+            extractor_sources = extractor.sources
         except Exception as e:
             logger.exception('The extractor {} failed'.format(extractor_name))
             extractor_sources = None
         else:
             logger.info('[{}] Extractor done'.format(extractor_name))
 
-        return (season, extractor_sources)
+        return extractor_sources

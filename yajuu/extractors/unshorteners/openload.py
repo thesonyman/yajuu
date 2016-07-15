@@ -36,7 +36,7 @@ def unshorten_openload(url, quality=None):
     if quality is None:
         quality = get_quality(url)
 
-    return [(quality, url)]
+    return [Source(url, quality)]
 
 
 def conv(s, addfactor=None):

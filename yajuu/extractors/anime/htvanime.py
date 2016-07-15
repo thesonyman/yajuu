@@ -5,6 +5,7 @@ import json
 import requests
 
 from . import AnimeExtractor
+from yajuu.media import Source
 
 
 class HtvanimeExtractor(AnimeExtractor):
@@ -56,16 +57,7 @@ class HtvanimeExtractor(AnimeExtractor):
         sources = {}
 
         with concurrent.futures.ThreadPoolExecutor(16) as executor:
-            for episode_number, _sources in filter(
-                lambda x: x,  # Filter out the None values
-                executor.map(self.map_sources, response['data'])
-            ):
-                if episode_number not in sources:
-                    sources[episode_number] = []
-
-                sources[episode_number] += _sources
-
-        return sources
+            list(executor.map(self.map_sources, response['data']))
 
     def map_sources(self, episode):
         retries = 0
@@ -101,12 +93,7 @@ class HtvanimeExtractor(AnimeExtractor):
         episode_number = int(episode['episode_number'])
         self.logger.info('Processing episode {}'.format(episode_number))
 
-        _sources = []
-
         for source in episode_response:
-            _sources.append((
-                int(''.join(x for x in source['quality'] if x.isdigit())),
-                source['url']
-            ))
-
-        return (episode_number, _sources)
+            quality = int(''.join(x for x in source['quality'] if x.isdigit()))
+            source = Source(source['url'], quality)
+            self._add_source(episode_number, source)

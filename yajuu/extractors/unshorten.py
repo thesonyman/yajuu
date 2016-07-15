@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup
 import logging
 
 from .unshorteners import *
+from yajuu.media import Source
 
 logger = logging.getLogger(__name__ + '.' + 'unshorten')
 
@@ -151,7 +152,7 @@ def unshorten_tiwi_kiwi(url, quality=None):
 
             link = span.find('a').get('href')
             logger.debug('[tiwi.kiwi] Found link: {}'.format(link))
-            sources.append((quality, link))
+            sources.append(Source(link, quality))
 
             break
 
@@ -164,8 +165,10 @@ def unshorten_solidfiles(url, quality=None):
 
     logger.debug('[solidfiles] Found {}'.format(link))
 
-    returned = [(get_quality(link), link)]
-    return returned
+    if quality is None:
+        quality = get_quality(link)
+
+    return [Source(link, quality)]
 
 
 def unshorten_vidstream(url, quality=None):
@@ -176,9 +179,9 @@ def unshorten_vidstream(url, quality=None):
     sources = []
 
     for link in soup.select('.mirror_link a'):
-        sources.append((
-            int(quality_regex.search(link.text).group(1)),
-            link.get('href')
+        sources.append(Source(
+            link.get('href'),
+            int(quality_regex.search(link.text).group(1))
         ))
 
     logger.debug('[vidstream] found {} sources'.format(len(link)))
@@ -200,7 +203,7 @@ def unshorten_mp4upload(url, quality=None):
         logger.warning('[mp4upload] quality was not passed')
         quality = get_quality(src)
 
-    return [(quality, src)]
+    return [Source(src, quality)]
 
 
 def unshorten_stream_moe(url, quality=None):
@@ -218,7 +221,7 @@ def unshorten_stream_moe(url, quality=None):
         logger.warning('[stream.moe] quality was not passed')
         quality = get_quality(src)
 
-    return [(quality, src)]
+    return [Source(src, quality)]
 
 
 def unshorten_bakavideo(url, quality=None):
@@ -247,7 +250,7 @@ def unshorten_bakavideo(url, quality=None):
         logger.warning('[bakavideo] quality was not passed')
         quality = get_quality(src)
 
-    return [(quality, src)]
+    return [Source(src, quality)]
 
 
 def unshorten_google_drive(url, quality=None):
@@ -268,7 +271,7 @@ def unshorten_google_drive(url, quality=None):
         logger.warning('[google drive] quality was not passed')
         quality = get_quality(src)
 
-    return [(quality, src)]
+    return [Source(src, quality)]
 
 
 def unshorten_tusfiles(url, quality=None):
@@ -292,7 +295,7 @@ def unshorten_tusfiles(url, quality=None):
         logger.warning('[tusfiles] quality was not passed')
         quality = get_quality(src)
 
-    return [(quality, src)]
+    return [Source(src, quality)]
 
 
 def unshorten_upload_af(url, quality=None):
@@ -334,4 +337,4 @@ def unshorten_upload_af(url, quality=None):
         logger.warning('[upload.af] quality was not passed')
         quality = get_quality(src)
 
-    return [(quality, src)]
+    return [Source(src, quality)]

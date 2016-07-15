@@ -49,6 +49,11 @@ class Media(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def get_file_path(self):
+        '''Returns a string which defines where the files will be stored.'''
+        pass
+
+    @abstractmethod
     def _update_metadata(self, query):
         '''Returns a metadata dict from the query.'''
 

@@ -38,15 +38,9 @@ class MasteraniExtractor(AnimeExtractor):
         sources = {}
 
         with concurrent.futures.ThreadPoolExecutor(16) as executor:
-            for episode_number, _sources in executor.map(self.episode_worker, [
+            list(executor.map(self.episode_worker, [
                     (slug, episode) for episode in episodes
-            ]):
-                if episode_number not in sources:
-                    sources[episode_number] = []
-
-                sources[episode_number] += _sources
-
-        return sources
+            ]))
 
     def episode_worker(self, data):
         slug, episode_details = data
@@ -66,8 +60,6 @@ class MasteraniExtractor(AnimeExtractor):
 
         mirrors = json.loads(js2py.eval_js(javascript))['mirrors']
 
-        sources = []
-
         for mirror in mirrors:
             prefix = mirror['host']['embed_prefix']
             suffix = mirror['host']['embed_suffix']
@@ -82,11 +74,7 @@ class MasteraniExtractor(AnimeExtractor):
 
             self.logger.debug('Found mirror source: {}'.format(url))
 
-            mirror_sources = unshorten(url, quality=mirror['quality'])
-
-            if mirror_sources:
-                sources += mirror_sources
+            sources = unshorten(url, quality=mirror['quality'])
+            self._add_sources(number, sources)
 
         self.logger.info('Done processing episode {}'.format(number))
-
-        return (number, sources)

@@ -43,20 +43,7 @@ class GogoAnimeIoExtractor(AnimeExtractor):
             links = list(itertools.chain.from_iterable(links_by_block))
             self.logger.debug('Found {} links!'.format(len(links)))
 
-            sources = {}
-
-            for source in executor.map(self._episode_worker, links):
-                if not source:
-                    continue
-
-                episode_number, episode_sources = source
-
-                if episode_number not in sources:
-                    sources[episode_number] = []
-
-                sources[episode_number] += episode_sources
-
-        return sources
+            list(executor.map(self._episode_worker, links))
 
     def _block_worker(self, data):
         movie_id, default_ep, link = data
@@ -85,10 +72,8 @@ class GogoAnimeIoExtractor(AnimeExtractor):
 
         self.logger.info('Processing episode {}'.format(episode_number))
 
-        sources = unshorten(
+        self._add_sources(episode_number, unshorten(
             soup.select('div.download-anime > a')[0].get('href')
-        )
+        ))
 
         self.logger.info('Done processing episode {}'.format(episode_number))
-
-        return (episode_number, sources)

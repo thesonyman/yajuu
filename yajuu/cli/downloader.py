@@ -120,17 +120,14 @@ def download_file(media, directory, format, path_params, sources):
         'filepath': path
     }.items()}
 
-    sources = filter_sources(sources)
-    sources = sort_sources(sources)
-
-    for quality, url in sources:
-        netloc = urllib.parse.urlparse(url).netloc
+    for source in sources.sorted():
+        netloc = urllib.parse.urlparse(source.url).netloc
 
         logger.info('Trying quality {}, downloading from {}'.format(
-            quality, netloc
+            source.quality, netloc
         ))
 
-        command_params['url'] = quote(url)
+        command_params['url'] = quote(source.url)
         command = config['misc']['downloader'].format(**command_params)
 
         logger.debug(command_params)
@@ -177,103 +174,3 @@ def download_file(media, directory, format, path_params, sources):
         logger.debug('The plex reloader is disabled.')
 
     logger.info('')
-
-
-def filter_sources(sources):
-    minimum_quality = config['media']['minimum_quality']
-    maximum_quality = config['media']['maximum_quality']
-
-    good_sources = []
-
-    for quality, url in sorted(sources, reverse=True):
-        if quality < minimum_quality:
-            logger.debug('Skipping too low quality {}'.format(quality))
-            continue
-        elif maximum_quality > 0 and quality > maximum_quality:
-            logger.warning('Skipping quality too high {}'.format(quality))
-            continue
-
-        good_sources.append((quality, url))
-
-    return good_sources
-
-
-def sort_sources(sources):
-    '''Sort the available sources by speed.'''
-
-    # First, get the largest url netloc, so we can align the messages
-    max_length = 0
-
-    for quality, url in sources:
-        host_length = len(urllib.parse.urlparse(url).netloc)
-
-        if host_length > max_length:
-            max_length = host_length
-
-    # Then, group the sources in a dict, cause we still want to preserve
-    # quality over speed.
-    by_quality = {}
-
-    for quality, url in sources:
-        if quality not in by_quality:
-            by_quality[quality] = []
-
-        by_quality[quality].append(url)
-
-    for quality in sorted(by_quality, reverse=True):
-        sources = by_quality[quality]
-        chunk_qualities = []
-
-        if len(sources) <= 1:
-            logger.debug(
-                'Only one source available for this quality, skipping network '
-                'speed sort.'
-            )
-
-            yield (quality, sources[0])
-            continue
-
-        for url in sources:
-            netloc = urllib.parse.urlparse(url).netloc
-            offset = max_length - len(netloc)
-
-            base = 'Testing source at {}.. {} '.format(
-                netloc, ' ' * offset
-            )
-
-            response = requests.get(
-                url, stream=True, headers={'Connection': 'close'}
-            )
-            size = 1e6  # Test over 1mb
-
-            start = time.time()
-            downloaded = 0
-
-            for chunk in response.iter_content(chunk_size=1024):
-                downloaded += len(chunk)
-
-                print('{} {} bytes'.format(
-                    base, downloaded
-                ), end='\r', flush=True)
-
-                if downloaded >= size:
-                    break
-
-            response_time = time.time() - start
-
-            print('{0} {1} bytes downloaded in {2:.2f} seconds'.format(
-                base, downloaded, response_time
-            ))
-
-            chunk_qualities.append((response_time, url))
-
-        # Now sort the chunk, fastest (smaller) first
-        chunk_qualities = sorted(
-            chunk_qualities, key=lambda x: x[0]
-        )
-
-        logger.debug((quality, chunk_qualities))
-
-        # Remove the response time and re-add the quality
-        for response_time, url in chunk_qualities:
-            yield (quality, url)
