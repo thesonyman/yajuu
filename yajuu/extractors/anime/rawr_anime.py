@@ -28,14 +28,16 @@ class RawrAnimeExtractor(AnimeExtractor):
             id = link.get('href')  # With a leading slash
 
             results += [
-                (title + ' (Sub)', id), (title + ' (Dub)', id)
+                (title + ' (Sub)', ('Subbed', id)),
+                (title + ' (Dub)', ('Dubbed', id))
             ]
 
         return results
 
     def extract(self, season, result):
-        version = 'subbed' if result[0].endswith(' (Sub)') else 'dubbed'
-        url = 'http://rawranime.tv' + result[1] + '?apl=1'
+        data = result[1]
+        version, id = data
+        url = 'http://rawranime.tv' + id + '?apl=1'
 
         html = requests.get(url).json()['html']
         soup = BeautifulSoup(html, 'html.parser')
@@ -44,20 +46,14 @@ class RawrAnimeExtractor(AnimeExtractor):
 
         for episode in soup.find_all('div', {'class': 'ep '}):
             number_div = episode.find('div', {'class': 'ep-number'})
-            episodes.append((version, result[1], number_div.text))
+            episodes.append((version, id, number_div.text))
 
         self.logger.debug('Found {} episodes'.format(len(episodes)))
 
         sources = {}
 
         with concurrent.futures.ThreadPoolExecutor(16) as executor:
-            for number, _sources in executor.map(self.page_worker, episodes):
-                if number not in sources:
-                    sources[number] = []
-
-                sources[number] += _sources
-
-        return sources
+            list(executor.map(self.page_worker, episodes))
 
     def page_worker(self, data):
         version, id, number = data
@@ -76,7 +72,7 @@ class RawrAnimeExtractor(AnimeExtractor):
         )
 
         for element in elements:
-            if element.get('data-lang') != version:
+            if element.get('data-lang').lower() != version.lower():
                 continue
 
             quality = int(''.join(
