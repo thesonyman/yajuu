@@ -8,3 +8,4 @@ from .kissanime import KissAnimeExtractor
 from .masterani import MasteraniExtractor
 from .chia_anime import ChiaAnimeExtractor
 from .rawr_anime import RawrAnimeExtractor
+from .moetube import MoeTubeExtractor

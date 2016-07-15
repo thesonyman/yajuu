@@ -42,6 +42,7 @@ Here is the complete list:
   - [htvanime.com](http://htvanime.com)
   - [masterani.me](http://www.masterani.me)
   - [rawranime.tv](http://rawranime.tv)
+  - [moetube.net](http://moetube.net/)
  - Movies
   - [icefilms.info](http://www.icefilms.info)
 
