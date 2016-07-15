@@ -1,7 +1,5 @@
 import re
 
-import execjs
-
 
 class AADecoder:
     '''Decodes aa obfuscated javascript (smileys). Only tested with code from

@@ -6,7 +6,6 @@ import concurrent.futures
 
 import cfscrape
 import requests
-import execjs
 import bs4
 
 from . import AnimeExtractor

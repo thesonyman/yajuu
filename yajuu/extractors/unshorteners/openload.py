@@ -2,7 +2,7 @@ import logging
 import re
 
 import requests
-import execjs
+import js2py
 
 from . import get_quality
 from .aa import AADecoder
@@ -24,7 +24,7 @@ def unshorten_openload(url, quality=None):
     # Search the index (the page have two urls, we need to select the correct
     # one).
     js = re.search(r'window.+[\n\s]?.+= (.+?);', matches[0]).group(1)
-    index = execjs.eval(js)
+    index = js2py.eval_js(js)
     logger.debug(index)
 
     # Now we get the valid url

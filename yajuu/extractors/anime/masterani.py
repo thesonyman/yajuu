@@ -2,7 +2,7 @@ import re
 import json
 import concurrent.futures
 
-import execjs
+import js2py
 
 from . import AnimeExtractor
 from .. import unshorten
@@ -64,7 +64,7 @@ class MasteraniExtractor(AnimeExtractor):
 
         self.logger.debug(javascript)
 
-        mirrors = json.loads(execjs.eval(javascript))['mirrors']
+        mirrors = json.loads(js2py.eval_js(javascript))['mirrors']
 
         sources = []
 

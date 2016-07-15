@@ -8,7 +8,7 @@ import subprocess
 import base64
 import time
 
-import execjs
+import js2py
 import requests
 from bs4 import BeautifulSoup
 import logging
@@ -260,7 +260,7 @@ def unshorten_google_drive(url, quality=None):
 
     logger.debug('Executing: {}'.format(javascript))
 
-    src = execjs.eval(javascript)
+    src = js2py.eval_js(javascript)
 
     logger.debug('[google drive] found source {}'.format(src))
 
