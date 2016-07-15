@@ -1,15 +1,17 @@
 import re
 import json
 import concurrent.futures
-
-import js2py
+import threading
+import json
 
 from . import AnimeExtractor
 from .. import unshorten
 
 
 class MasteraniExtractor(AnimeExtractor):
-    MIRRORS_REGEX = re.compile(r'var args = ({[.\s\S]+?)</script>')
+    MIRRORS_REGEX = re.compile(
+        r'var args = {[\s\S\n]+mirrors:[\s\S\n]+(\[.+?\]),[\s\S\n]+episode:'
+    )
 
     def _get_url(self):
         return 'http://www.masterani.me'
@@ -39,7 +41,7 @@ class MasteraniExtractor(AnimeExtractor):
 
         with concurrent.futures.ThreadPoolExecutor(16) as executor:
             list(executor.map(self.episode_worker, [
-                    (slug, episode) for episode in episodes
+                (slug, episode) for episode in episodes
             ]))
 
     def episode_worker(self, data):
@@ -51,14 +53,9 @@ class MasteraniExtractor(AnimeExtractor):
 
         url = 'http://www.masterani.me/anime/watch/{}/{}'.format(slug, number)
 
-        # We extract the object hard-coded, and translate it to json.
-        javascript = 'JSON.stringify({})'.format(
-            self.MIRRORS_REGEX.search(self.session.get(url).text).group(1)
-        )
-
-        self.logger.debug(javascript)
-
-        mirrors = json.loads(js2py.eval_js(javascript))['mirrors']
+        mirrors = json.loads(self.MIRRORS_REGEX.search(
+            self.session.get(url).text
+        ).group(1).strip().replace('\n', ''))
 
         for mirror in mirrors:
             prefix = mirror['host']['embed_prefix']
