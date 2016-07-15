@@ -23,6 +23,9 @@ class SeasonExtractor(Extractor):
     def _add_sources(self, identifier, sources):
         returned = []
 
+        if sources is None:
+            return
+
         for source in sources:
             returned.append(self._add_source(identifier, source))
 
