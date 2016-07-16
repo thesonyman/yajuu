@@ -4,6 +4,7 @@ import concurrent.futures
 import requests
 
 from . import AnimeExtractor
+from .. import SearchResult
 from yajuu.extractors import get_quality
 from yajuu.media import Source
 
@@ -25,10 +26,10 @@ class MoeTubeExtractor(AnimeExtractor):
             title = link.find('div', {'id': 'stitle'}).text
             results.append((title, link.get('href')))
 
-        return results
+        return SearchResult.from_tuples(self.media, results)
 
     def extract(self, season, result):
-        soup = self._get('http://moetube.net' + result[1])
+        soup = self._get('http://moetube.net' + result)
 
         episodes_chunks = soup.select('#navmain a')
         episodes_chunks = episodes_chunks[1:]  # Remove the summary page

@@ -5,7 +5,7 @@ import threading
 import json
 
 from . import AnimeExtractor
-from .. import unshorten
+from .. import unshorten, SearchResult
 
 
 class MasteraniExtractor(AnimeExtractor):
@@ -28,10 +28,10 @@ class MasteraniExtractor(AnimeExtractor):
         for item in data:
             results.append((item['title'], (item['id'], item['slug'])))
 
-        return results
+        return SearchResult.from_tuples(self.media, results)
 
     def extract(self, season, result):
-        id, slug = result[1]
+        id, slug = result
 
         episodes = self.session.get(
             'http://www.masterani.me/api/anime/{}/detailed'.format(id)

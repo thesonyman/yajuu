@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from . import AnimeExtractor
-from .. import unshorten
+from .. import unshorten, SearchResult
 
 
 class RawrAnimeExtractor(AnimeExtractor):
@@ -32,11 +32,10 @@ class RawrAnimeExtractor(AnimeExtractor):
                 (title + ' (Dub)', ('Dubbed', id))
             ]
 
-        return results
+        return SearchResult.from_tuples(self.media, results)
 
     def extract(self, season, result):
-        data = result[1]
-        version, id = data
+        version, id = result
         url = 'http://rawranime.tv' + id + '?apl=1'
 
         html = requests.get(url).json()['html']

@@ -4,7 +4,7 @@ import random
 import urllib.parse
 
 from . import MovieExtractor
-from .. import unshorten
+from .. import unshorten, SearchResult
 
 
 class IceFilmsExtractor(MovieExtractor):
@@ -24,10 +24,10 @@ class IceFilmsExtractor(MovieExtractor):
         for result in soup.select('.title a'):
             results.append((result.text, result.get('href')))
 
-        return results
+        return SearchResult.from_tuples(self.media, results)
 
     def extract(self, result):
-        soup = self._get(self._get_url() + result[1])
+        soup = self._get(self._get_url() + result)
 
         sources_soup = self._get(
             self._get_url() + soup.select('iframe#videoframe')[0].get('src')
@@ -37,7 +37,7 @@ class IceFilmsExtractor(MovieExtractor):
             soup.select('iframe#videoframe')[0].get('src')
 
         for quality_div in sources_soup.select('.ripdiv'):
-            print('=> ' + quality_div.find('b').text)
+            self.logger.debug('=> ' + quality_div.find('b').text)
 
             t = re.search('t=(\d+?)"', sources_soup.prettify()).group(1)
             results = re.search(

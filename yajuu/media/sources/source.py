@@ -3,7 +3,7 @@ from enum import Enum
 
 class Source:
     LANGUAGES = Enum('languages', 'en')
-    VERSIONS = Enum('versions', 'sub dub raw')
+    VERSIONS = Enum('versions', 'unknown sub dub raw')
 
     def __init__(self, url, quality, lang=None, version=None):
         self.url = url

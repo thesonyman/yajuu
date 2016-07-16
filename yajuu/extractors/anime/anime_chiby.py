@@ -7,7 +7,7 @@ import concurrent.futures
 import requests
 
 from . import AnimeExtractor
-from .. import unshorten
+from .. import unshorten, SearchResult
 
 HTTP_HEADER = {
     'User-Agent': (
@@ -72,7 +72,7 @@ class AnimeChibyExtractor(AnimeExtractor):
 
                 results.append((block_title, available_sources))
 
-        return results
+        return SearchResult.from_tuples(self.media, results)
 
     def _unshorten(self, link):
         self.logger.debug('Unshortening {}'.format(link))
@@ -125,7 +125,7 @@ class AnimeChibyExtractor(AnimeExtractor):
             first_case_links = []
             second_case_links = []
 
-            for input_title, link in result[1]:
+            for input_title, link in result:
                 # If we are in the first case
                 if len(link.split('=')) == 2:
                     # The url is separated from the url using an equal symbol,

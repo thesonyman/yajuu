@@ -3,7 +3,7 @@ import concurrent.futures
 import itertools
 
 from . import AnimeExtractor
-from .. import unshorten
+from .. import unshorten, SearchResult
 
 
 class GogoAnimeIoExtractor(AnimeExtractor):
@@ -25,10 +25,10 @@ class GogoAnimeIoExtractor(AnimeExtractor):
             link = item.find('a')
             results.append((link.text.strip(), link.get('href')))
 
-        return results
+        return SearchResult.from_tuples(self.media, results)
 
     def extract(self, season, result):
-        soup = self._get(result[1])
+        soup = self._get(result)
 
         movie_id = soup.select('#movie_id')[0].get('value')
         default_ep = soup.select('#default_ep')[0].get('value')

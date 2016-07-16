@@ -4,6 +4,7 @@ import concurrent.futures
 import requests
 
 from . import AnimeExtractor
+from .. import SearchResult
 
 
 class ChiaAnimeExtractor(AnimeExtractor):
@@ -24,10 +25,10 @@ class ChiaAnimeExtractor(AnimeExtractor):
                 ('http://m.chia-anime.tv' + link.get('href'))
             ))
 
-        return results
+        return SearchResult.from_tuples(self.media, results)
 
     def extract(self, season, result):
-        soup = self._get(result[1])
+        soup = self._get(result)
         episodes_select = soup.find('select', {'id': 'id'})
 
         base_url = 'http://m.chia-anime.tv/mw.php?id={}&submit=Watch'

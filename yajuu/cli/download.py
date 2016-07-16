@@ -10,10 +10,11 @@ import requests
 import tabulate
 
 from .download_parser import validate_media
-from yajuu.media import Media, SeasonMedia
+from yajuu.media import Media, SeasonMedia, Source
 from yajuu.config import config
 from . import Asker
 from .downloader import download_single_media, download_season_media
+from yajuu.media import MEDIA_TYPES
 
 logger = logging.getLogger(__name__)
 asker = Asker.factory()
@@ -156,7 +157,21 @@ def select_result(extractor, query, message, results):
 
     logger.debug('{} found {} results'.format(extractor_name, len(results)))
 
-    results = results[:20]
+    for key, classes in MEDIA_TYPES.items():
+        media_cls, orchestrator_cls = classes
+
+        if isinstance(extractor.media, media_cls):
+            break
+
+    default_version = config['paths']['version']
+    media_version = config['paths']['medias'][key]['version']
+
+    if media_version != 'any' and default_version != 'any':
+        if not media_version or media_version == '':
+            media_version = default_version
+
+        version = getattr(Source.VERSIONS, media_version)
+        results = [x for x in results if x.version == version]
 
     if len(results) <= 0:
         logger.debug('The extractor {} did not find any results.'.format(
@@ -165,4 +180,14 @@ def select_result(extractor, query, message, results):
 
         return None
 
-    return asker.select_one(message, results)
+    for result in results:
+        if result.title.lower() == extractor.media.metadata['name'].lower():
+            logger.info('Found perfect match on {}\n'.format(
+                extractor._get_url()
+            ))
+
+            return result.identifier
+
+    return asker.select_one(message, [(
+        r.title, r.identifier
+    ) for r in results[:20]])

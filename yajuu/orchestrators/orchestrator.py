@@ -42,7 +42,7 @@ class Orchestrator(metaclass=ABCMeta):
             results = sorted(
                 results,
                 key=lambda x: difflib.SequenceMatcher(
-                    a=query, b=x[0].lower()
+                    a=query, b=x.title.lower()
                 ).ratio(),
                 reverse=True  # Better first
             )
@@ -58,7 +58,7 @@ class Orchestrator(metaclass=ABCMeta):
             result = select_result(extractor, query, message, results)
 
             if result:
-                self._extractors[extractor] = (extractor, result)
+                self._extractors[extractor] = result
             else:
                 del self._extractors[extractor]
 
@@ -98,7 +98,7 @@ class Orchestrator(metaclass=ABCMeta):
             return False
 
         for index, row in enumerate(results):
-            print('[{}] {}'.format(index, row[0]))
+            print('[{}] {}'.format(index, row.title))
 
         while choice is None:
             try:

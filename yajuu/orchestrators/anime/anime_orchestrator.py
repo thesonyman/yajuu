@@ -1,9 +1,9 @@
 from .. import SeasonOrchestrator
 
 from yajuu.extractors import (
-    AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
-    HtvanimeExtractor, MasteraniExtractor, ChiaAnimeExtractor,
-    RawrAnimeExtractor, MoeTubeExtractor
+    MasteraniExtractor, RawrAnimeExtractor, HtvanimeExtractor,
+    MoeTubeExtractor, AnimeChibyExtractor, AnimeHavenExtractor,
+    GogoAnimeIoExtractor
 )
 
 

@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from . import AnimeExtractor
-from .. import unshorten
+from .. import unshorten, SearchResult
 from yajuu.media import Source
 
 
@@ -52,10 +52,10 @@ class AnimeHavenExtractor(AnimeExtractor):
                 self.logger.debug('-> Found version {}'.format(url))
                 results.append(('{} ({})'.format(title, version), url))
 
-        return results
+        return SearchResult.from_tuples(self.media, results)
 
     def extract(self, season, result):
-        self.default_url = result[1]
+        self.default_url = result
 
         with concurrent.futures.ThreadPoolExecutor(16) as executor:
             # First step, we extract links to all the episodes

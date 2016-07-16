@@ -5,6 +5,7 @@ import json
 import requests
 
 from . import AnimeExtractor
+from .. import SearchResult
 from yajuu.media import Source
 
 
@@ -45,14 +46,14 @@ class HtvanimeExtractor(AnimeExtractor):
             for hit in response['hits']:
                 results.append((hit['title'], hit['slug']))
 
-        return results
+        return SearchResult.from_tuples(self.media, results)
 
     def extract(self, season, result):
         base_url = (
             'http://api.htvanime.com/api/v1/anime_episodes?anime_slug={}'
         )
 
-        response = requests.get(base_url.format(result[1])).json()
+        response = requests.get(base_url.format(result)).json()
 
         sources = {}
 

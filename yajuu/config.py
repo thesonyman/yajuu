@@ -18,6 +18,8 @@ DEFAULT_CONFIG = {
     },
     'paths': {
         'base': os.path.expanduser(os.path.join('~', 'Videos')),
+        'version': 'sub',
+        'lang': 'en',
         'medias': {
             'anime': {
                 'base': 'Anime',
@@ -25,11 +27,13 @@ DEFAULT_CONFIG = {
                 'episode': (
                     '{anime_name} - S{season_number:02d}e{episode_number:03d}.'
                     '{ext}'
-                )
+                ),
+                'version': ''
             },
             'movie': {
                 'base': 'Movies',
-                'file': '{movie_name} ({movie_date}).{ext}'
+                'file': '{movie_name} ({movie_date}).{ext}',
+                'version': 'any'
             }
         }
     },

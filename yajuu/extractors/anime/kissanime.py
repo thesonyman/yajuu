@@ -9,6 +9,7 @@ import requests
 import bs4
 
 from . import AnimeExtractor
+from .. import SearchResult
 from yajuu.media import Source
 
 
@@ -45,10 +46,10 @@ class KissAnimeExtractor(AnimeExtractor):
         for link in soup.find_all('a'):
             results.append((link.text, link.get('href')))
 
-        return results
+        return SearchResult.from_tuples(self.media, results)
 
     def extract(self, season, result):
-        soup = self._get(result[1])
+        soup = self._get(result)
 
         sources = {}
 
