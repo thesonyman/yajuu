@@ -18,12 +18,13 @@ from yajuu.media import MEDIA_TYPES
 
 logger = logging.getLogger(__name__)
 asker = Asker.factory()
+automatic_mode = False
 
 
 @click.command()
 @click.pass_context
 @click.option(
-    '--media', callback=validate_media, multiple=True, required=True,
+    '-m', '--media', callback=validate_media, multiple=True, required=True,
     help='Add a media to download, the string must respect the format "Name '
     'season[s] s,..". Eg: "Code Geass" seasons 1,2. The option can be passed '
     'multiple times.'
@@ -32,7 +33,20 @@ asker = Asker.factory()
     '--skip-confirmation', is_flag=True, help='Skip the first confirmation, '
     'however you will still need to select the correct results'
 )
-def download(ctx, media, skip_confirmation):
+@click.option(
+    '--automatic', is_flag=True,
+    help='Skip all the websites that does not have a perfect match. This '
+    'reduce the number of sources drastically.'
+)
+@click.option(
+    '--dump', is_flag=True,
+    help='Skip the integrated download phase and instead dumps all the links '
+    'to multiple text file.'
+)
+def download(ctx, media, skip_confirmation, automatic, dump):
+    global automatic_mode
+    automatic_mode = automatic
+
     # Since we can't change the name
     medias = media
     del media
@@ -57,8 +71,9 @@ def download(ctx, media, skip_confirmation):
 
     for media_type, data in orchestrators:
         data = list(data)
-        data.insert(0, medias_path)
-        data.insert(1, media_config)
+        data.insert(0, dump)
+        data.insert(1, medias_path)
+        data.insert(2, media_config)
 
         if media_type == 'season':
             download_season_media(*data)
@@ -70,6 +85,12 @@ def download(ctx, media, skip_confirmation):
             time.time() - ctx.obj['START_TIME']
         ))
     ))
+
+    if dump:
+        logger.info(
+            'Please note that most links are certainly valid only for a few '
+            'hours.'
+        )
 
 
 def confirm_download(medias, skip_confirmation):
@@ -187,6 +208,9 @@ def select_result(extractor, query, message, results):
             ))
 
             return result.identifier
+
+    if automatic_mode:
+        return
 
     return asker.select_one(message, [(
         r.title, r.identifier

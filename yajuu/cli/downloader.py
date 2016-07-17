@@ -27,7 +27,7 @@ def get_plex():
         )
 
 
-def download_single_media(path, media_config, media, orchestrator):
+def download_single_media(dump, path, media_config, media, orchestrator):
     if config['plex_reload']['enabled']:
         get_plex()
 
@@ -40,10 +40,14 @@ def download_single_media(path, media_config, media, orchestrator):
         'movie_date': media.metadata['year']
     }
 
-    download_file(media, path, media_config['file'], path_params, sources)
+    download_file(
+        dump, media, path, media_config['file'], path_params, sources
+    )
 
 
-def download_season_media(path, media_config, media, seasons, orchestrator):
+def download_season_media(
+    dump, path, media_config, media, seasons, orchestrator
+):
     if config['plex_reload']['enabled']:
         get_plex()
 
@@ -57,10 +61,13 @@ def download_season_media(path, media_config, media, seasons, orchestrator):
             )
         )
 
-        logger.info('Downloading season {}'.format(season))
+        logger.info('{} season {}'.format(
+            'Dumping' if dump else 'Downloading', season
+        ))
 
         for episode_number, sources in season_sources.items():
-            logger.info('Downloading episode {}/{} of season {}'.format(
+            logger.info('{} episode {}/{} of season {}'.format(
+                'Dumping' if dump else 'Downloading',
                 episode_number, len(media._seasons[season]), season
             ))
 
@@ -71,7 +78,7 @@ def download_season_media(path, media_config, media, seasons, orchestrator):
             }
 
             download_file(
-                media, season_path, media_config['episode'], path_params,
+                dump, media, season_path, media_config['episode'], path_params,
                 sources
             )
 
@@ -87,7 +94,7 @@ def get_sources(media, orchestrator):
     return sources
 
 
-def download_file(media, directory, format, path_params, sources):
+def download_file(dump, media, directory, format, path_params, sources):
     if len(glob.glob(format.format(ext='*', **path_params))) > 0:
         logger.info('The file already exists.')
         return
@@ -97,7 +104,7 @@ def download_file(media, directory, format, path_params, sources):
     downloaded = False
 
     # Since we don't check the extension yet, we can move this out of the loop
-    filename = format.format(ext='mp4', **path_params)
+    filename = format.format(ext='txt' if dump else 'mp4', **path_params)
 
     # If the platform is windows, some characters need to be removed
     if platform.system() == 'Windows':
@@ -112,6 +119,12 @@ def download_file(media, directory, format, path_params, sources):
 
     if not os.path.exists(directory):
         os.makedirs(directory)
+
+    if dump:
+        with open(path, 'w') as file:
+            file.write('\n'.join([x.url for x in sources]))
+
+        return
 
     # Precompile the command params
     command_params = {k: quote(v) for k, v in {
