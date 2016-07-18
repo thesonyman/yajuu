@@ -13,10 +13,6 @@ from yajuu.media import Source
 
 
 class KissAnimeExtractor(AnimeExtractor):
-    EPISODE_REGEX = re.compile('.+ Episode (\d{3,})')
-
-    QUALITY_REGEX = re.compile('(\d{3,})p')
-
     def __init__(self, media, season):
         super().__init__(media, season)
 
@@ -66,7 +62,7 @@ class KissAnimeExtractor(AnimeExtractor):
         import cfscrape
 
         url = 'https://kissanime.to' + link.get('href')
-        episode_number_results = self.EPISODE_REGEX.search(link.text)
+        episode_number_results = re.search(r'.+ Episode (\d{3,})', link.text)
 
         session = cfscrape.create_scraper()
         session.get(self._get_url())
@@ -102,7 +98,7 @@ class KissAnimeExtractor(AnimeExtractor):
         quality_select = episode_soup.select('select#selectQuality')[0]
 
         for option in quality_select.select('option'):
-            quality = int(self.QUALITY_REGEX.search(option.text).group(1))
+            quality = int(re.search(r'(\d{3,})p', option.text).group(1))
             src = base64.b64decode(option.get('value')).decode('utf-8')
             source = Source(src, quality)
             self._add_source(episode_number, source)

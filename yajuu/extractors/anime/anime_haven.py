@@ -11,9 +11,6 @@ from yajuu.media import Source
 
 class AnimeHavenExtractor(AnimeExtractor):
 
-    PAGE_REGEX = re.compile(r'(http://.+/page/)([0-9]+)')
-    EPISODE_REGEX = re.compile(r'http://.+-episode-([0-9]+)')
-
     def _get_url(self):
         return 'http://animehaven.org'
 
@@ -99,8 +96,8 @@ class AnimeHavenExtractor(AnimeExtractor):
                 'nav', {'class': 'pagination'}
             ).find_all('a')
 
-            page_regex_results = self.PAGE_REGEX.search(
-                pagination_links[-1].get('href')
+            page_regex_results = re.search(
+                r'(http://.+/page/)([0-9]+)', pagination_links[-1].get('href')
             )
 
             pages_url_base = page_regex_results.group(1)
@@ -123,7 +120,7 @@ class AnimeHavenExtractor(AnimeExtractor):
     def episode_worker(self, link):
         '''Extract the available sources from a link to an episode.'''
 
-        episode_number_search = self.EPISODE_REGEX.search(link)
+        episode_number_search = re.search(r'http://.+-episode-([0-9]+)', link)
 
         if not episode_number_search:
             return

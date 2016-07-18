@@ -9,10 +9,6 @@ from yajuu.extractors import unshorten, SearchResult
 
 
 class MasteraniExtractor(AnimeExtractor):
-    MIRRORS_REGEX = re.compile(
-        r'var args = {[\s\S\n]+mirrors:[\s\S\n]+(\[.+?\]),[\s\S\n]+episode:'
-    )
-
     def _get_url(self):
         return 'http://www.masterani.me'
 
@@ -53,7 +49,9 @@ class MasteraniExtractor(AnimeExtractor):
 
         url = 'http://www.masterani.me/anime/watch/{}/{}'.format(slug, number)
 
-        mirrors = json.loads(self.MIRRORS_REGEX.search(
+        mirrors = json.loads(re.search(
+            r'var args = {[\s\S\n]+mirrors:[\s\S\n]+(\[.+?\]),[\s\S\n]+episode'
+            r':',
             self.session.get(url).text
         ).group(1).strip().replace('\n', ''))
 
