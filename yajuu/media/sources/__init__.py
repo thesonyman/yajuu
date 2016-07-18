@@ -1,2 +1,2 @@
-from .source import Source
-from .source_list import SourceList
+from yajuu.media.sources.source import Source
+from yajuu.media.sources.source_list import SourceList

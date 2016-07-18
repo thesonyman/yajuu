@@ -4,7 +4,7 @@ seasons and episodes.'''
 from abc import ABCMeta, abstractmethod
 from glob import glob
 
-from . import Media
+from yajuu.media import Media
 
 
 class SeasonMedia(Media):

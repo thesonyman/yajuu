@@ -1,4 +1,4 @@
-from . import Extractor
+from yajuu.extractors import Extractor
 from yajuu.media import SourceList
 
 

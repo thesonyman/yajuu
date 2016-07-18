@@ -68,9 +68,9 @@ class Orchestrator(metaclass=ABCMeta):
 
     def _get_search_method(self, extractors):
         if logger.getEffectiveLevel() == logging.DEBUG:
-            return self._sequential_search(extractors)
+            yield from self._sequential_search(extractors)
         else:
-            return self._threaded_search(extractors)
+            yield from self._threaded_search(extractors)
 
     def _sequential_search(self, extractors):
         for extractor in extractors:

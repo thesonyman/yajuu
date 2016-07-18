@@ -6,7 +6,7 @@ import click
 import pytvdbapi
 
 from yajuu.media import Media, SeasonMedia
-from . import Asker
+from yajuu.cli import Asker
 
 logger = logging.getLogger(__name__)
 asker = Asker.factory()
@@ -18,10 +18,16 @@ def validate_media(context, param, values):
 
     logger.info('Getting the required metadata..')
 
-    if issubclass(context.obj['MEDIA_CLASS'], SeasonMedia):
-        return validate_season_media(context, param, values)
-    else:
-        return validate_single_media(context, param, values)
+    try:
+        if issubclass(context.obj['MEDIA_CLASS'], SeasonMedia):
+            medias = validate_season_media(context, param, values)
+        else:
+            medias = validate_single_media(context, param, values)
+    except KeyboardInterrupt:
+        logger.info('Aborted.')
+        sys.exit(0)
+
+    return medias
 
 
 def validate_single_media(context, param, values):

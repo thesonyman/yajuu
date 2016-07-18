@@ -4,9 +4,8 @@ import time
 import click
 import click_log
 
-from .cli import download, plex
-from .media import MEDIA_TYPES
-from .orchestrators import AnimeOrchestrator, MovieOrchestrator
+from yajuu.cli import download, plex
+from yajuu.media import MEDIA_TYPES
 
 # Use 'yajuu' instead of __name__, because since __name__ is 'yajuu.yajuu', the
 # sub-packages won't be affected by the configuration.

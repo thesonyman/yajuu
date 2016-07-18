@@ -2,8 +2,8 @@ import re
 import concurrent.futures
 import itertools
 
-from . import AnimeExtractor
-from .. import unshorten, SearchResult
+from yajuu.extractors.anime import AnimeExtractor
+from yajuu.extractors import unshorten, SearchResult
 
 
 class GogoAnimeIoExtractor(AnimeExtractor):

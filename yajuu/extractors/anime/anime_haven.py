@@ -4,8 +4,8 @@ import concurrent.futures
 import requests
 from bs4 import BeautifulSoup
 
-from . import AnimeExtractor
-from .. import unshorten, SearchResult
+from yajuu.extractors.anime import AnimeExtractor
+from yajuu.extractors import unshorten, SearchResult
 from yajuu.media import Source
 
 

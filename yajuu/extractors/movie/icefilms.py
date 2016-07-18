@@ -3,8 +3,8 @@ import time
 import random
 import urllib.parse
 
-from . import MovieExtractor
-from .. import unshorten, SearchResult
+from yajuu.extractors.movie import MovieExtractor
+from yajuu.extractors import unshorten, SearchResult
 
 
 class IceFilmsExtractor(MovieExtractor):

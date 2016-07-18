@@ -9,11 +9,11 @@ import click
 import requests
 import tabulate
 
-from .download_parser import validate_media
-from yajuu.media import Media, SeasonMedia, Source
+from yajuu.cli.download_parser import validate_media
+from yajuu.media import Source
 from yajuu.config import config
-from . import Asker
-from .downloader import download_single_media, download_season_media
+from yajuu.cli import Asker
+from yajuu.cli.downloader import download_single_media, download_season_media
 from yajuu.media import MEDIA_TYPES
 
 logger = logging.getLogger(__name__)

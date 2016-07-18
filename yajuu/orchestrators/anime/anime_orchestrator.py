@@ -1,4 +1,4 @@
-from .. import SeasonOrchestrator
+from yajuu.orchestrators import SeasonOrchestrator
 
 from yajuu.extractors import (
     MasteraniExtractor, RawrAnimeExtractor, HtvanimeExtractor,

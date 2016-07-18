@@ -13,7 +13,7 @@ import requests
 from bs4 import BeautifulSoup
 import logging
 
-from .unshorteners import *
+from yajuu.extractors.unshorteners import *
 from yajuu.media import Source
 
 logger = logging.getLogger(__name__ + '.' + 'unshorten')

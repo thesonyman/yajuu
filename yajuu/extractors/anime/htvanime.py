@@ -4,8 +4,8 @@ import json
 
 import requests
 
-from . import AnimeExtractor
-from .. import SearchResult
+from yajuu.extractors.anime import AnimeExtractor
+from yajuu.extractors import SearchResult
 from yajuu.media import Source
 
 

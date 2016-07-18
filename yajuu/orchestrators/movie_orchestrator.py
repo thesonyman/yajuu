@@ -1,4 +1,4 @@
-from . import Orchestrator
+from yajuu.orchestrators import Orchestrator
 from yajuu.extractors import IceFilmsExtractor
 
 
