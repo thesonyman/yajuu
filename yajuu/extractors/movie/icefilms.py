@@ -2,6 +2,7 @@ import re
 import time
 import random
 import urllib.parse
+import concurrent.futures
 
 from yajuu.extractors.movie import MovieExtractor
 from yajuu.extractors import unshorten, SearchResult
@@ -36,64 +37,73 @@ class IceFilmsExtractor(MovieExtractor):
         referer = self._get_url() + \
             soup.select('iframe#videoframe')[0].get('src')
 
-        for quality_div in sources_soup.select('.ripdiv'):
-            self.logger.debug('=> ' + quality_div.find('b').text)
+        with concurrent.futures.ThreadPoolExecutor(16) as executor:
+            futures = []
 
-            t = re.search('t=(\d+?)"', sources_soup.prettify()).group(1)
-            results = re.search(
-                'var s=(\d+?),m=(\d+?);', sources_soup.prettify())
-            s, m = results.group(1), results.group(2)
-            sec = re.search(
-                'f.lastChild.value="(.+?)"', sources_soup.prettify()).group(1)
+            for quality_div in sources_soup.select('.ripdiv'):
+                self.logger.debug('=> ' + quality_div.find('b').text)
 
-            for source in quality_div.select('a[onclick]'):
-                id = source.get('onclick')[3:-1]
+                t = re.search('t=(\d+?)"', sources_soup.prettify()).group(1)
+                results = re.search(
+                    'var s=(\d+?),m=(\d+?);', sources_soup.prettify())
+                s, m = results.group(1), results.group(2)
+                sec = re.search(
+                    'f.lastChild.value="(.+?)"', sources_soup.prettify()
+                ).group(1)
 
-                success = False
+                for source in quality_div.select('a[onclick]'):
+                    futures.append(executor.submit(
+                        self._source_worker, referer, t, sec, source
+                    ))
 
-                while not success:
-                    source_url = self._get_url() + (
-                        '/membersonly/components/com_iceplayer/video.'
-                        'phpAjaxResp.php?s={}&t={}'
-                    ).format(id, t)
+                list(concurrent.futures.as_completed(futures))
 
-                    payload = {
-                        'id': id,
-                        's': str(random.randint(10000, 10060)),
-                        'iqs': '',
-                        'url': '',
-                        'm': str(random.randint(10000, 10500)),
-                        'cap': ' ',
-                        'sec': sec,
-                        't': t
-                    }
+    def _source_worker(self, referer, t, sec, source):
+        id = source.get('onclick')[3:-1]
 
-                    headers = {
-                        'Referer': referer
-                    }
+        success = False
 
-                    response, soup = self._post(
-                        source_url, data=payload, return_response=True,
-                        headers=headers
-                    )
+        while not success:
+            source_url = self._get_url() + (
+                '/membersonly/components/com_iceplayer/video.'
+                'phpAjaxResp.php?s={}&t={}'
+            ).format(id, t)
 
-                    if len(response.text) > 0:
-                        success = True
-                    else:
-                        time.sleep(random.randint(1, 3))
+            payload = {
+                'id': id,
+                's': str(random.randint(10000, 10060)),
+                'iqs': '',
+                'url': '',
+                'm': str(random.randint(10000, 10500)),
+                'cap': ' ',
+                'sec': sec,
+                't': t
+            }
 
-                # The url is something like 'blah?url=some_url?url=the url'.
-                encoded_sub_url = urllib.parse.parse_qsl(
-                    urllib.parse.urlparse(response.text).query
-                )[0][1]  # First item, then value
+            headers = {
+                'Referer': referer
+            }
 
-                host_url = urllib.parse.parse_qsl(
-                    urllib.parse.urlparse(encoded_sub_url).query
-                )[0][1]
+            response, soup = self._post(
+                source_url, data=payload, return_response=True,
+                headers=headers
+            )
 
-                try:
-                    self.sources.add_sources(unshorten(host_url))
-                except:
-                    pass
+            if len(response.text) > 0:
+                success = True
+            else:
+                time.sleep(random.randint(1, 3))
 
-                time.sleep(0.5)
+        # The url is something like 'blah?url=some_url?url=the url'.
+        encoded_sub_url = urllib.parse.parse_qsl(
+            urllib.parse.urlparse(response.text).query
+        )[0][1]  # First item, then value
+
+        host_url = urllib.parse.parse_qsl(
+            urllib.parse.urlparse(encoded_sub_url).query
+        )[0][1]
+
+        try:
+            self.sources.add_sources(unshorten(host_url))
+        except:
+            pass
