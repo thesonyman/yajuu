@@ -4,7 +4,6 @@ import base64
 import random
 import concurrent.futures
 
-import cfscrape
 import requests
 import bs4
 
@@ -64,6 +63,8 @@ class KissAnimeExtractor(AnimeExtractor):
         return sources
 
     def episode_worker(self, link):
+        import cfscrape
+
         url = 'https://kissanime.to' + link.get('href')
         episode_number_results = self.EPISODE_REGEX.search(link.text)
 

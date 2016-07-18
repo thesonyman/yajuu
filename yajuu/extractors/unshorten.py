@@ -8,7 +8,6 @@ import subprocess
 import base64
 import time
 
-import js2py
 import requests
 from bs4 import BeautifulSoup
 import logging
@@ -254,6 +253,8 @@ def unshorten_bakavideo(url, quality=None):
 
 
 def unshorten_google_drive(url, quality=None):
+    import js2py
+
     html = requests.get(url).text
     fmt_stream_map_regex = re.compile(r'\["fmt_stream_map"\,(".+?")\]')
 

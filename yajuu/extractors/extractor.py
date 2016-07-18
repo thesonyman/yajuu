@@ -5,7 +5,6 @@ import coloredlogs
 import sys
 
 import requests
-import cfscrape
 from bs4 import BeautifulSoup
 
 from yajuu.media import SourceList
@@ -24,6 +23,8 @@ class abstractstatic(staticmethod):
 class Extractor(metaclass=ABCMeta):
 
     def __init__(self, media):
+        import cfscrape
+
         self.session = cfscrape.create_scraper()
         self.media = media
         self.links = []

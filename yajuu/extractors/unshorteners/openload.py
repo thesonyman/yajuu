@@ -2,7 +2,6 @@ import logging
 import re
 
 import requests
-import js2py
 
 from . import get_quality
 from .aa import AADecoder
@@ -13,6 +12,8 @@ logger = logging.getLogger(__name__)
 def unshorten_openload(url, quality=None):
     '''Inspired from https://github.com/Zanzibar82/plugin.video.streamondemand/
     blob/bf655c445e77be57ef4ece84f11b5899a41e0939/servers/openload.py.'''
+
+    import js2py
 
     html = requests.get(url).text
 
