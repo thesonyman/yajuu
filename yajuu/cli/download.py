@@ -10,6 +10,7 @@ import requests
 import tabulate
 
 from yajuu.cli.download_parser import validate_media
+from yajuu.media.movie import Movie
 from yajuu.media import Source
 from yajuu.config import config
 from yajuu.cli import Asker
@@ -201,8 +202,18 @@ def select_result(extractor, query, message, results):
 
         return None
 
+    media_title = extractor.media.metadata['name'].lower().strip()
+    alternate_title = None
+
+    if isinstance(extractor.media, Movie):
+        media_title = '{} ({})'.format(
+            media_title, extractor.media.metadata['year']
+        )
+
     for result in results:
-        if result.title.lower() == extractor.media.metadata['name'].lower():
+        title = result.title.lower().strip()
+
+        if title == media_title or title == alternate_title:
             logger.info('Found perfect match on {}\n'.format(
                 extractor._get_url()
             ))
