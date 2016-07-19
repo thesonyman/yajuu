@@ -183,7 +183,7 @@ def unshorten_vidstream(url, quality=None):
             int(quality_regex.search(link.text).group(1))
         ))
 
-    logger.debug('[vidstream] found {} sources'.format(len(link)))
+    logger.debug('[vidstream] found {} sources'.format(len(sources)))
 
     return sources
 
