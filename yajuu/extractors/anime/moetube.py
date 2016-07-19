@@ -1,8 +1,6 @@
 import re
 import concurrent.futures
 
-import requests
-
 from yajuu.extractors.anime import AnimeExtractor
 from yajuu.extractors import SearchResult
 from yajuu.extractors import get_quality
@@ -43,8 +41,10 @@ class MoeTubeExtractor(AnimeExtractor):
             soup = self._get('http://moetube.net' + link)
             episodes += [x.get('href') for x in soup.select('.episode > a')]
 
-        with concurrent.futures.ThreadPoolExecutor(16) as executor:
-            list(executor.map(self._episode_worker, episodes))
+        self._episode_worker(episodes[0])
+
+        # with concurrent.futures.ThreadPoolExecutor(16) as executor:
+        #     list(executor.map(self._episode_worker, episodes))
 
     def _episode_worker(self, link):
         # First extract the anime and episodes ids
@@ -55,7 +55,7 @@ class MoeTubeExtractor(AnimeExtractor):
         self.logger.info('Processing episode {}'.format(episode_number))
 
         # Then get the downlaod link
-        src = requests.post('http://moetube.net/rui.php', data={
+        src = self.session.post('http://moetube.net/rui.php', data={
             'id': id,
             'ep': episode_number,
             'chk': 1
