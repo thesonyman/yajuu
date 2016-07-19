@@ -1,5 +1,6 @@
 import logging
 import time
+import pip
 
 import click
 import click_log
@@ -33,6 +34,15 @@ def media(ctx, media_type):
     ctx.obj['ORCHESTRATOR_CLASS'] = MEDIA_TYPES[media_type][1]
 
 
+@click.command()
+@click.option('--branch', default='master')
+def upgrade(branch):
+    pip.main([
+        'install', '--upgrade',
+        'git+https://github.com/vivescere/yajuu@{}'.format(branch)
+    ])
+
+
 @click.group()
 def configure():
     pass
@@ -43,6 +53,7 @@ media.add_command(download)
 
 cli.add_command(media)
 cli.add_command(configure)
+cli.add_command(upgrade)
 
 
 def main():
