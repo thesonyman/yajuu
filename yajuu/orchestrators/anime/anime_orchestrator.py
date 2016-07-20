@@ -3,7 +3,8 @@ from yajuu.orchestrators import SeasonOrchestrator
 from yajuu.extractors import (
     MasteraniExtractor, RawrAnimeExtractor, HtvanimeExtractor,
     MoeTubeExtractor, AnimeChibyExtractor, AnimeHavenExtractor,
-    GogoAnimeIoExtractor, KissAnimeExtractor, ChiaAnimeCoExtractor
+    GogoAnimeIoExtractor, KissAnimeExtractor, ChiaAnimeCoExtractor,
+    AnilinktzExtractor
 )
 
 
@@ -16,5 +17,6 @@ class AnimeOrchestrator(SeasonOrchestrator):
         return [
             AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
             HtvanimeExtractor, MasteraniExtractor, RawrAnimeExtractor,
-            MoeTubeExtractor, KissAnimeExtractor, ChiaAnimeCoExtractor
+            MoeTubeExtractor, KissAnimeExtractor, ChiaAnimeCoExtractor,
+            AnilinktzExtractor
         ]

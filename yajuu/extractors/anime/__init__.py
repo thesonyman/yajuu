@@ -10,3 +10,4 @@ from yajuu.extractors.anime.chia_anime import ChiaAnimeExtractor
 from yajuu.extractors.anime.rawr_anime import RawrAnimeExtractor
 from yajuu.extractors.anime.moetube import MoeTubeExtractor
 from yajuu.extractors.anime.chia_anime_co import ChiaAnimeCoExtractor
+from yajuu.extractors.anime.anilinktz import AnilinktzExtractor
