@@ -1,11 +1,6 @@
-import re
-import time
-import base64
-import random
 import concurrent.futures
-
-import requests
-import bs4
+import base64
+import re
 
 from yajuu.extractors.anime import AnimeExtractor
 from yajuu.extractors import SearchResult
@@ -13,13 +8,6 @@ from yajuu.media import Source
 
 
 class KissAnimeExtractor(AnimeExtractor):
-    def __init__(self, media, season):
-        super().__init__(media, season)
-
-        self.session.headers['User-Agent'] = (
-            'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like '
-            'Gecko) Chrome/41.0.2228.0 Safari/537.36'
-        )
 
     def _get_url(self):
         return 'http://kissanime.to'
@@ -27,80 +15,40 @@ class KissAnimeExtractor(AnimeExtractor):
     def search(self):
         self._disable_cloudflare()
 
-        soup = self._post('https://kissanime.to/Search/SearchSuggest', data={
+        soup = self._post('http://kissanime.to/Search/SearchSuggest', data={
             'type': 'Anime',
             'keyword': self.media.metadata['name']
-        }, headers={
-            'origin': 'https://kissanime.to',
-            'referer': 'https://kissanime.to',
-            'x-requested-with': 'XMLHttpRequest'
         })
 
-        results = []
-
-        for link in soup.find_all('a'):
-            results.append((link.text, link.get('href')))
-
-        return SearchResult.from_tuples(self.media, results)
+        return SearchResult.from_links(self.media, soup.find_all('a'))
 
     def extract(self, season, result):
         soup = self._get(result)
+        links = [x.get('href') for x in soup.select('td a')]
 
-        sources = {}
+        with concurrent.futures.ThreadPoolExecutor(4) as executor:
+            list(executor.map(self._episode_worker, links))
 
-        links = soup.select('table a[href^="/Anime/"]')
-
-        with concurrent.futures.ThreadPoolExecutor(16) as executor:
-            list(executor.map(
-                self.episode_worker,
-                soup.select('table a[href^="/Anime/"]')
-            ))
-
-        return sources
-
-    def episode_worker(self, link):
-        import cfscrape
-
-        url = 'https://kissanime.to' + link.get('href')
-        episode_number_results = re.search(r'.+ Episode (\d{3,})', link.text)
-
-        session = cfscrape.create_scraper()
-        session.get(self._get_url())
-
-        if not episode_number_results:
-            return None
-
-        episode_number = int(episode_number_results.group(1))
+    def _episode_worker(self, link):
+        episode_number = int(re.search(
+            r'/Anime/.+?/Episode-(\d{3,})\?id=\d+$', link
+        ).group(1))
 
         self.logger.info('Processing episode {}'.format(episode_number))
 
-        correct = False
+        response, soup = self._get(
+            self._get_url() + link, return_response=True
+        )
 
-        while not correct:
-            self.logger.debug('[GETTING SOUP] :: {}'.format(episode_number))
-            # episode_soup = self._get(url)
-            episode_soup = bs4.BeautifulSoup(
-                session.get(url).text, 'html.parser')
+        quality_select = soup.find('select', {'id': 'selectQuality'})
 
-            if 'Are you human?' not in episode_soup.prettify():
-                correct = True
-            else:
-                self.logger.debug('[ARE YOU HUMAN] :: {}'.format(
-                    episode_number
-                ))
+        if quality_select is None:
+            self.logger.warning('Could not extract sources, captcha required')
+            return
 
-                # Else reset the connection
-                time.sleep(1)
-                session.cookies.clear()
-
-        self.logger.debug('[OK] :: {}'.format(episode_number))
-
-        quality_select = episode_soup.select('select#selectQuality')[0]
-
-        for option in quality_select.select('option'):
-            quality = int(re.search(r'(\d{3,})p', option.text).group(1))
+        for option in quality_select:
+            quality = int(''.join([x for x in option.text if x.isdigit()]))
             src = base64.b64decode(option.get('value')).decode('utf-8')
-            source = Source(src, quality)
-            self._add_source(episode_number, source)
+            self._add_source(episode_number, Source(src, quality))
 
-        self.logger.info('Done Processing episode {}'.format(episode_number))
+        self.logger.info('Done processing episode {}'.format(episode_number))
