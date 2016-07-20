@@ -74,7 +74,11 @@ class Orchestrator(metaclass=ABCMeta):
 
     def _sequential_search(self, extractors):
         for extractor in extractors:
-            yield (extractor, extractor.search())
+            try:
+                results = extractor.search()
+                yield (extractor, results)
+            except Exception as e:
+                logger.error(e)
 
     def _threaded_search(self, extractors):
         with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
@@ -84,11 +88,17 @@ class Orchestrator(metaclass=ABCMeta):
             ]
 
             for future in concurrent.futures.as_completed(futures):
-                yield future.result()
+                data = future.result()
+
+                if data:
+                    yield data
 
     def _threaded_search_worker(self, extractor):
-        results = extractor.search()
-        return (extractor, results)
+        try:
+            results = extractor.search()
+            return (extractor, results)
+        except Exception as e:
+            logger.error(e)
 
     def _select_result(self, extractor, query, message, results):
         # Get the correct result
