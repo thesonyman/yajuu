@@ -103,9 +103,16 @@ class SourceList:
                     netloc, ' ' * offset
                 )
 
-                response = requests.get(
-                    source.url, stream=True, headers={'Connection': 'close'}
-                )
+                print(base, end='\r', flush=True)
+
+                try:
+                    response = requests.get(
+                        source.url, stream=True, timeout=5,
+                        headers={'Connection': 'close'}
+                    )
+                except requests.exceptions.ConnectTimeout:
+                    print('{} timed out'.format(base))
+
                 size = 1e6  # Test over 1mb
 
                 start = time.time()
