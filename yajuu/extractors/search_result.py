@@ -23,6 +23,15 @@ class SearchResult:
     def from_tuples(cls, media, data):
         return [cls(media, *x) for x in data]
 
+    @classmethod
+    def from_links(cls, media, data):
+        return cls.from_tuples(media, [
+            (
+                re.sub(r'[\r\n]', '', x.text.strip()),
+                x.get('href')
+            ) for x in data
+        ])
+
     def _parse_title(self, title):
         version_regex = re.compile(r'\s?\(([SsdD]ub)\)\s?')
         results = version_regex.search(title)
