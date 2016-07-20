@@ -5,6 +5,7 @@ import requests
 
 from . import get_quality
 from .aa import AADecoder
+from yajuu.media import Source
 
 logger = logging.getLogger(__name__)
 
