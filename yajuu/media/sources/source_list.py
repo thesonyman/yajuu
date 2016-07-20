@@ -110,8 +110,12 @@ class SourceList:
                         source.url, stream=True, timeout=5,
                         headers={'Connection': 'close'}
                     )
-                except requests.exceptions.ConnectTimeout:
+                except (
+                    requests.exceptions.ConnectTimeout,
+                    requests.exceptions.ReadTimeout
+                ):
                     print('{} timed out'.format(base))
+                    continue
 
                 size = 1e6  # Test over 1mb
 
