@@ -18,5 +18,5 @@ class AnimeOrchestrator(SeasonOrchestrator):
             AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
             HtvanimeExtractor, MasteraniExtractor, RawrAnimeExtractor,
             MoeTubeExtractor, KissAnimeExtractor, ChiaAnimeCoExtractor,
-            AnilinktzExtractor, AnimeFrostExtractor
+            AnimeFrostExtractor
         ]

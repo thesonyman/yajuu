@@ -26,16 +26,34 @@ class AnilinktzExtractor(AnimeExtractor):
         )
 
     def extract(self, season, result):
-        soup = self._get('http://anilinkz.tv' + result)
-        episodes = [
-            x.get('href') for x in soup.select('#serieslist span span a')
-        ]
+        url = 'http://anilinkz.tv' + result
+        response, soup = self._get(url, return_response=True)
+
+        page_count = int(re.search(
+            r"\$\('#pagenavi'\).pagination\({\s+pages:\s(\d+),", response.text
+        ).group(1))
+        pages = [url + '?page={}'.format(x) for x in range(2, page_count)]
+
+        episodes = self._list_episodes(soup)
+
+        for page in pages:
+            soup = self._get(page)
+            episodes += self._list_episodes(soup)
 
         with concurrent.futures.ThreadPoolExecutor(16) as executor:
             list(executor.map(self._episode_worker, episodes))
 
+    def _list_episodes(self, soup):
+        return [
+            x.get('href') for x in soup.select('#serieslist span span a')
+        ]
+
     def _episode_worker(self, url):
-        episode_number = int(re.search(r'-episode-(\d{1,3})$', url).group(1))
+        try:
+            results = re.search(r'-episode-(\d{1,3})$', url)
+            episode_number = int(results.group(1))
+        except AttributeError:
+            return
 
         self.logger.info('Processing episode {}'.format(episode_number))
 
