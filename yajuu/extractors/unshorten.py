@@ -42,7 +42,8 @@ def unshorten(url, quality=None):
         'drive.google.com': unshorten_google_drive,
         'tusfiles.net': unshorten_tusfiles,
         'upload.af': unshorten_upload_af,
-        'openload.co': unshorten_openload
+        'openload.co': unshorten_openload,
+        'playbb.me': unshorten_playbb
     }
 
     host = urllib.parse.urlsplit(url).netloc
@@ -336,6 +337,27 @@ def unshorten_upload_af(url, quality=None):
 
     if quality is None:
         logger.warning('[upload.af] quality was not passed')
+        quality = get_quality(src)
+
+    return [Source(src, quality)]
+
+
+def unshorten_playbb(url, quality=None):
+    source = requests.get(url).text
+
+    # Quoted url to a page that redirects to the source
+    quoted_url = re.search(r'_url = "(.+?)";', source).group(1)
+
+    query_string = urllib.parse.urlparse(
+        urllib.parse.unquote(quoted_url)
+    ).query
+
+    # The script just redirect by decoding the passed base64 url
+    encoded_url = urllib.parse.parse_qs(query_string)['url'][0]
+    src = base64.b64decode(encoded_url).decode('utf-8')
+
+    if quality is None:
+        logger.warning('[playbb] quality was not passed')
         quality = get_quality(src)
 
     return [Source(src, quality)]
