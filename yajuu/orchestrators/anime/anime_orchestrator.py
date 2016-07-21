@@ -4,7 +4,7 @@ from yajuu.extractors import (
     MasteraniExtractor, RawrAnimeExtractor, HtvanimeExtractor,
     MoeTubeExtractor, AnimeChibyExtractor, AnimeHavenExtractor,
     GogoAnimeIoExtractor, KissAnimeExtractor, ChiaAnimeCoExtractor,
-    AnilinktzExtractor
+    AnilinktzExtractor, AnimeFrostExtractor
 )
 
 
@@ -18,5 +18,5 @@ class AnimeOrchestrator(SeasonOrchestrator):
             AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
             HtvanimeExtractor, MasteraniExtractor, RawrAnimeExtractor,
             MoeTubeExtractor, KissAnimeExtractor, ChiaAnimeCoExtractor,
-            AnilinktzExtractor
+            AnilinktzExtractor, AnimeFrostExtractor
         ]
