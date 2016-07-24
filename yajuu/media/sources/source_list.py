@@ -4,7 +4,7 @@ import time
 
 import requests
 
-from yajuu.media.sources import Source
+from yajuu.media.sources.source import Source
 from yajuu.config import config
 
 logger = logging.getLogger(__name__)

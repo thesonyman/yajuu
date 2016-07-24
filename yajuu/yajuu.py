@@ -5,8 +5,9 @@ import pip
 import click
 import click_log
 
-from yajuu.cli import download, plex
-from yajuu.media import MEDIA_TYPES
+from yajuu.cli.download import download
+from yajuu.cli.configure import plex
+from yajuu.media.types import MEDIA_TYPES
 
 # Use 'yajuu' instead of __name__, because since __name__ is 'yajuu.yajuu', the
 # sub-packages won't be affected by the configuration.

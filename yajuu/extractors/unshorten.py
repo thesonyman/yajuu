@@ -12,8 +12,9 @@ import requests
 from bs4 import BeautifulSoup
 import logging
 
-from yajuu.extractors.unshorteners import *
-from yajuu.media import Source
+from yajuu.extractors.unshorteners.utils import get_quality
+from yajuu.extractors.unshorteners.openload import unshorten_openload
+from yajuu.media.sources.source import Source
 
 logger = logging.getLogger(__name__ + '.' + 'unshorten')
 

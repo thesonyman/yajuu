@@ -1,4 +1,4 @@
-from yajuu.extractors import Extractor
+from yajuu.extractors.extractor import Extractor
 
 
 class MovieExtractor(Extractor):

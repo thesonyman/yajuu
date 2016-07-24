@@ -1,5 +1,5 @@
-from yajuu.extractors import Extractor
-from yajuu.media import SourceList
+from yajuu.extractors.extractor import Extractor
+from yajuu.media.sources.source_list import SourceList
 
 
 class SeasonExtractor(Extractor):

@@ -3,9 +3,9 @@ import re
 
 import requests
 
-from . import get_quality
-from .aa import AADecoder
-from yajuu.media import Source
+from yajuu.extractors.unshorteners.utils import get_quality
+from yajuu.extractors.unshorteners.aa import AADecoder
+from yajuu.media.sources.source import Source
 
 logger = logging.getLogger(__name__)
 

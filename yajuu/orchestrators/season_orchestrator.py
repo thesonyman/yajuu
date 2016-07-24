@@ -2,8 +2,8 @@ import concurrent.futures
 import difflib
 import logging
 
-from yajuu.orchestrators import Orchestrator
-from yajuu.media import SourceList
+from yajuu.orchestrators.orchestrator import Orchestrator
+from yajuu.media.sources.source_list import SourceList
 
 logger = logging.getLogger(__name__)
 

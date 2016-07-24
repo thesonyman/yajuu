@@ -1,10 +1,10 @@
 import re
 import concurrent.futures
 
-from yajuu.extractors.anime import AnimeExtractor
-from yajuu.extractors import SearchResult
-from yajuu.extractors import get_quality
-from yajuu.media import Source
+from yajuu.extractors.anime.anime_extractor import AnimeExtractor
+from yajuu.extractors.search_result import SearchResult
+from yajuu.extractors.unshorteners.utils import get_quality
+from yajuu.media.sources.source import Source
 
 
 class MoeTubeExtractor(AnimeExtractor):

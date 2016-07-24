@@ -7,7 +7,7 @@ import plexapi.myplex
 import plexapi.exceptions
 
 from yajuu.config import config, save_config
-from yajuu.cli import Asker
+from yajuu.cli.asker import Asker
 
 logger = logging.getLogger(__name__)
 asker = Asker.factory()

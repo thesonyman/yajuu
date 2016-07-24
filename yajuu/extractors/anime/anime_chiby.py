@@ -6,8 +6,9 @@ import concurrent.futures
 
 import requests
 
-from yajuu.extractors.anime import AnimeExtractor
-from yajuu.extractors import unshorten, SearchResult
+from yajuu.extractors.anime.anime_extractor import AnimeExtractor
+from yajuu.extractors.search_result import SearchResult
+from yajuu.extractors.unshorten import unshorten
 
 HTTP_HEADER = {
     'User-Agent': (

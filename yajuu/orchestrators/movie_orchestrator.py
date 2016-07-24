@@ -1,5 +1,5 @@
-from yajuu.orchestrators import Orchestrator
-from yajuu.extractors import IceFilmsExtractor
+from yajuu.orchestrators.orchestrator import Orchestrator
+from yajuu.extractors.movie.icefilms import IceFilmsExtractor
 
 
 class MovieOrchestrator(Orchestrator):

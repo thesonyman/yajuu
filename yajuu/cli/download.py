@@ -11,11 +11,11 @@ import tabulate
 
 from yajuu.cli.download_parser import validate_media
 from yajuu.media.movie import Movie
-from yajuu.media import Source
+from yajuu.media.sources.source import Source
 from yajuu.config import config
-from yajuu.cli import Asker
+from yajuu.cli.asker import Asker
 from yajuu.cli.downloader import download_single_media, download_season_media
-from yajuu.media import MEDIA_TYPES
+from yajuu.media.types import MEDIA_TYPES
 
 logger = logging.getLogger(__name__)
 asker = Asker.factory()

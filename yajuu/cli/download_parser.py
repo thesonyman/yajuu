@@ -5,8 +5,9 @@ import sys
 import click
 import pytvdbapi
 
-from yajuu.media import Media, SeasonMedia
-from yajuu.cli import Asker
+from yajuu.media.media import Media
+from yajuu.media.season_media import SeasonMedia
+from yajuu.cli.asker import Asker
 
 logger = logging.getLogger(__name__)
 asker = Asker.factory()

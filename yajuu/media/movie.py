@@ -1,6 +1,7 @@
 import datetime
 
-from yajuu.media import Media, ImdbProvider
+from yajuu.media.media import Media
+from yajuu.media.providers.imdb import ImdbProvider
 
 
 class Movie(ImdbProvider, Media):

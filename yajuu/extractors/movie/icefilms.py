@@ -4,8 +4,9 @@ import random
 import urllib.parse
 import concurrent.futures
 
-from yajuu.extractors.movie import MovieExtractor
-from yajuu.extractors import unshorten, SearchResult
+from yajuu.extractors.movie.movie_extractor import MovieExtractor
+from yajuu.extractors.search_result import SearchResult
+from yajuu.extractors.unshorten import unshorten
 
 
 class IceFilmsExtractor(MovieExtractor):

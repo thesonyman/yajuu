@@ -7,7 +7,7 @@ import sys
 import requests
 from bs4 import BeautifulSoup
 
-from yajuu.media import SourceList
+from yajuu.media.sources.source_list import SourceList
 
 
 class abstractstatic(staticmethod):

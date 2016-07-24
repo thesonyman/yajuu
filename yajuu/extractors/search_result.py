@@ -1,6 +1,6 @@
 import re
 
-from yajuu.media import Source
+from yajuu.media.sources.source import Source
 
 
 class SearchResult:

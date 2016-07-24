@@ -4,7 +4,7 @@ behavior of all media.'''
 from abc import ABCMeta, abstractmethod
 import sys
 
-from yajuu.cli import Asker
+from yajuu.cli.asker import Asker
 
 asker = Asker.factory()
 

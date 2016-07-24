@@ -12,7 +12,7 @@ import requests
 import plexapi.server
 
 from yajuu.config import config
-from yajuu.cli import quote
+from yajuu.cli.utils import quote
 
 logger = logging.getLogger(__name__)
 server = None

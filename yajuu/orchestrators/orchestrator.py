@@ -3,7 +3,7 @@ import difflib
 from abc import ABCMeta, abstractmethod
 import concurrent.futures
 
-from yajuu.media import SourceList
+from yajuu.media.sources.source_list import SourceList
 
 logger = logging.getLogger(__name__)
 

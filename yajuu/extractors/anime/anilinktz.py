@@ -4,9 +4,10 @@ import re
 
 from bs4 import BeautifulSoup
 
-from yajuu.extractors.anime import AnimeExtractor
-from yajuu.extractors import SearchResult, unshorten
-from yajuu.media import Source
+from yajuu.extractors.anime.anime_extractor import AnimeExtractor
+from yajuu.extractors.search_result import SearchResult
+from yajuu.extractors.unshorten import unshorten
+from yajuu.media.sources.source import Source
 
 
 class AnilinktzExtractor(AnimeExtractor):

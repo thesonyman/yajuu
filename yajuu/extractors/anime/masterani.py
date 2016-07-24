@@ -4,8 +4,9 @@ import concurrent.futures
 import threading
 import json
 
-from yajuu.extractors.anime import AnimeExtractor
-from yajuu.extractors import unshorten, SearchResult
+from yajuu.extractors.anime.anime_extractor import AnimeExtractor
+from yajuu.extractors.search_result import SearchResult
+from yajuu.extractors.unshorten import unshorten
 
 
 class MasteraniExtractor(AnimeExtractor):
