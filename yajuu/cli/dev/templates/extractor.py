@@ -14,7 +14,7 @@ class {{class_name}}(AnimeExtractor):
     def search(self):
         {% if disable_cloudflare %}self._disable_cloudflare()
 
-        {% endif %}soup = self._post()
+        {% endif %}soup = self._(self._get_url() + '')
 
         return SearchResult.from_links(self.media, soup.find_all('a'))
 
@@ -28,3 +28,4 @@ class {{class_name}}(AnimeExtractor):
         self.logger.info('Processing episode {}'.format(episode_number))
 
         self.logger.info('Done processing episode {}'.format(episode_number))
+
