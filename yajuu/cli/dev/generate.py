@@ -16,6 +16,86 @@ asker = Asker.factory()
 def generate(type):
     if type == 'extractor':
         generate_extractor()
+    elif type == 'unshortener':
+        generate_unshortener()
+
+
+def get_filename(url, extension):
+    filename = ''
+    is_special = False
+
+    for c in tldextract.extract(url).domain:
+        if c.isalpha() or c.isdigit():
+            filename += '_' + c if is_special else c
+            is_special = False
+        else:
+            is_special = True
+
+    return filename + '.' + extension
+
+
+def get_classname(url, suffix):
+    class_name = ''
+    is_special = True
+
+    for c in tldextract.extract(url).domain:
+        if c.isalpha() or c.isdigit():
+            class_name += c.upper() if is_special else c
+            is_special = False
+        else:
+            is_special = True
+
+    return class_name + suffix
+
+
+def generate_unshortener():
+    env = {}
+    env['url'] = asker.text('Enter the url of the website')
+
+    filename = get_filename(env['url'], 'py')
+    filename = asker.text('Enter the filename', default=filename)
+    path = 'yajuu/unshorteners/' + filename
+    env['name'] = filename[:-3]
+
+    parts = tldextract.extract(env['url'])
+    host = parts.domain + '.' + parts.suffix
+    host = asker.text('Enter the host (stripped from www.)', default=host)
+
+    if os.path.exists(path):
+        logger.error('The file already exists.')
+        sys.exit(1)
+
+    with open('yajuu/cli/dev/templates/unshortener.py', 'r') as file:
+        template = jinja2.Template(file.read())
+
+    with open(path, 'w') as file:
+        file.write(template.render(**env))
+
+    with open('yajuu/unshorteners/__init__.py', 'r') as file:
+        lines = file.read().split('\n')
+
+    in_dict = False
+
+    for i, line in enumerate(lines):
+        if 'unshorteners = {' in line:
+            in_dict = True
+
+        if line.strip() == '}' and in_dict:
+            in_dict = False
+            break
+
+    # Add a comma if necessary to the previous item
+    if not lines[i - 1].endswith(','):
+        lines[i - 1] += ','
+
+    lines.insert(i, "{}'{}': '{}'".format(
+        ' ' * 8, host, env['name']
+    ))
+
+    with open('yajuu/unshorteners/__init__.py', 'w') as file:
+        file.write('\n'.join(lines))
+
+    logger.info('The files were written.')
 
 
 def generate_extractor():
@@ -26,20 +106,8 @@ def generate_extractor():
         logger.error('No url was provided.')
         sys.exit(1)
 
-    class_name = ''
-    file_name = ''
-    is_special = True
-
-    for c in tldextract.extract(env['url']).domain:
-        if c.isalpha() or c.isdigit():
-            class_name += c.upper() if is_special else c
-            file_name += '_' + c if file_name != '' and is_special else c
-            is_special = False
-        else:
-            is_special = True
-
-    class_name += 'Extractor'
-    file_name += '.py'
+    class_name = get_classname(env['url'], 'Extractor')
+    file_name = get_filename(env['url'], 'py')
 
     file_name = asker.text('Enter the filename', default=file_name)
     path = 'yajuu/extractors/anime/{}'.format(file_name)

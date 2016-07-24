@@ -13,7 +13,9 @@ def shell(*args, **kwargs):
 
 
 @click.command()
-@click.option('-t', '--type', type=click.Choice(['extractor']), required=True)
+@click.option('-t', '--type', type=click.Choice([
+    'extractor', 'unshortener'
+]), required=True)
 def generate(*args, **kwargs):
     from yajuu.cli.dev.generate import generate as _generate
     _generate(*args, **kwargs)
