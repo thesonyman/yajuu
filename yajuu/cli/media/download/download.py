@@ -11,7 +11,9 @@ import tabulate
 from yajuu.media.sources.source import Source
 from yajuu.config import config
 from yajuu.cli.asker import Asker
-from yajuu.cli.downloader import download_single_media, download_season_media
+from yajuu.cli.media.download.downloader import (
+    download_single_media, download_season_media
+)
 from yajuu.types import MEDIA_TYPES_KEYS
 
 logger = logging.getLogger(__name__)

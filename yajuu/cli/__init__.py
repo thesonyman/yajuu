@@ -3,7 +3,7 @@ to load, we wrap them and load them only when the user really calls them.
 We can save ~700 ms, which is a lot.'''
 
 import click
-from yajuu.cli.download_parser import validate_media
+from yajuu.cli.media.download.download_parser import validate_media
 
 
 @click.command()
@@ -29,7 +29,7 @@ from yajuu.cli.download_parser import validate_media
     'to multiple text file.'
 )
 def download(*args, **kwargs):
-    from yajuu.cli.download import download as _download
+    from yajuu.cli.media.download.download import download as _download
     _download(*args, **kwargs)
 
 
@@ -39,5 +39,5 @@ def download(*args, **kwargs):
     help='Only print the configuration as yaml, does not save it.'
 )
 def plex(*args, **kwargs):
-    from yajuu.cli.configure import plex as _plex
+    from yajuu.cli.configure.plex import plex as _plex
     _plex(*args, **kwargs)
