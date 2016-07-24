@@ -33,8 +33,7 @@ class SearchResult:
         ])
 
     def _parse_title(self, title):
-        version_regex = re.compile(r'\s?\(([SsdD]ub)(?:bed)?\)\s?')
-        results = version_regex.search(title)
+        results = re.search(r'\s?\(([SsdD]ub)(?:bed)?\)\s?', title)
 
         if not results:
             return title

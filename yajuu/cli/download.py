@@ -1,4 +1,3 @@
-import sys
 import os
 import xml.dom.minidom
 import glob
@@ -9,41 +8,17 @@ import click
 import requests
 import tabulate
 
-from yajuu.cli.download_parser import validate_media
-from yajuu.media.movie import Movie
 from yajuu.media.sources.source import Source
 from yajuu.config import config
 from yajuu.cli.asker import Asker
 from yajuu.cli.downloader import download_single_media, download_season_media
-from yajuu.media.types import MEDIA_TYPES
+from yajuu.types import MEDIA_TYPES_KEYS
 
 logger = logging.getLogger(__name__)
 asker = Asker.factory()
 automatic_mode = False
 
 
-@click.command()
-@click.pass_context
-@click.option(
-    '-m', '--media', callback=validate_media, multiple=True, required=True,
-    help='Add a media to download, the string must respect the format "Name '
-    'season[s] s,..". Eg: "Code Geass" seasons 1,2. The option can be passed '
-    'multiple times.'
-)
-@click.option(
-    '--skip-confirmation', is_flag=True, help='Skip the first confirmation, '
-    'however you will still need to select the correct results'
-)
-@click.option(
-    '--automatic', is_flag=True,
-    help='Skip all the websites that does not have a perfect match. This '
-    'reduce the number of sources drastically.'
-)
-@click.option(
-    '--dump', is_flag=True,
-    help='Skip the integrated download phase and instead dumps all the links '
-    'to multiple text file.'
-)
 def download(ctx, media, skip_confirmation, automatic, dump):
     global automatic_mode
     automatic_mode = automatic
@@ -131,7 +106,7 @@ def confirm_download(medias, skip_confirmation):
             'Do you wish to start the downloads?', default=True
         ):
             logger.debug('Exiting program')
-            sys.exit(0)
+            os._exit(0)
     else:
         logger.debug('Skipping the confirmation.')
 
@@ -179,10 +154,8 @@ def select_result(extractor, query, message, results):
 
     logger.debug('{} found {} results'.format(extractor_name, len(results)))
 
-    for key, classes in MEDIA_TYPES.items():
-        media_cls, orchestrator_cls = classes
-
-        if isinstance(extractor.media, media_cls):
+    for key in MEDIA_TYPES_KEYS:
+        if extractor.media.get_name().lower() == key:
             break
 
     default_version = config['paths']['version']
@@ -205,7 +178,7 @@ def select_result(extractor, query, message, results):
     media_title = extractor.media.metadata['name'].lower().strip()
     alternate_title = None
 
-    if isinstance(extractor.media, Movie):
+    if extractor.media.get_name() == 'Movie':
         media_title = '{} ({})'.format(
             media_title, extractor.media.metadata['year']
         )

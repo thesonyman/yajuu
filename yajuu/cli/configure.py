@@ -1,4 +1,4 @@
-import sys
+import os
 import yaml
 import logging
 
@@ -13,11 +13,6 @@ logger = logging.getLogger(__name__)
 asker = Asker.factory()
 
 
-@click.command()
-@click.option(
-    '--only-print', is_flag=True,
-    help='Only print the configuration as yaml, does not save it.'
-)
 def plex(only_print):
     account = get_plex_account()
     plex = get_plex(account)
@@ -46,7 +41,7 @@ def get_plex_account():
 
     # Also check for empty values
     if not username or not password:
-        sys.exit(0)
+        os._exit(0)
 
     try:
         account = plexapi.myplex.MyPlexAccount.signin(
@@ -54,7 +49,7 @@ def get_plex_account():
         )
     except plexapi.exceptions.Unauthorized:
         logger.error('Could not login with provided informations.')
-        sys.exit(1)
+        os._exit(1)
 
     logger.debug('Auth token is {}'.format(account.authenticationToken))
     return account
@@ -89,7 +84,7 @@ def get_selected_sections(plex):
         )
 
         if not selected:
-            sys.exit(0)
+            os._exit(0)
 
         selected_sections[media_name] = selected
 

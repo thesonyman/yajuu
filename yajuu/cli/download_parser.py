@@ -1,6 +1,6 @@
 import logging
 import re
-import sys
+import os
 
 import click
 import pytvdbapi
@@ -26,7 +26,7 @@ def validate_media(context, param, values):
             medias = validate_single_media(context, param, values)
     except KeyboardInterrupt:
         logger.info('Aborted.')
-        sys.exit(0)
+        os._exit(0)
 
     return medias
 
@@ -47,7 +47,7 @@ def validate_single_media(context, param, values):
             ))
         except pytvdbapi.error.ConnectionError:
             logger.error('You\'re not connected to any network.')
-            sys.exit(1)
+            os._exit(1)
 
         medias.append(('single', media))
 
@@ -79,7 +79,7 @@ def validate_season_media(context, param, values):
             ))
         except pytvdbapi.error.ConnectionError:
             logger.error('You\'re not connected to any network.')
-            sys.exit(1)
+            os._exit(1)
 
         try:
             # Map the seasons to a list of integers.

@@ -34,12 +34,13 @@ class ChiaAnimeExtractor(AnimeExtractor):
         base_url = 'http://m.chia-anime.tv/mw.php?id={}&submit=Watch'
 
         episodes = []
-        number_regex = re.compile(r'^Select .+? Episode (\d+)$')
 
         for option in episodes_select.find_all('option'):
             url = base_url.format(option.get('value'))
 
-            number_regex_result = number_regex.search(option.text.strip())
+            number_regex_result = re.search(
+                r'^Select .+? Episode (\d+)$', option.text.strip()
+            )
 
             if not number_regex_result:
                 self.logger.warning('Episode at url {} is invalid'.format(

@@ -43,9 +43,7 @@ class AnimeChibyExtractor(AnimeExtractor):
 
         # Well, the website uses window.open instead of href, for no apparent
         # reason.
-        onclick_regex = re.compile(
-            r'window\.open\([\'|\'](.+)[\'|\']\);return false;'
-        )
+        onclick_regex = r'window\.open\([\'|\'](.+)[\'|\']\);return false;'
 
         results = []
 

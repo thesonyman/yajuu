@@ -67,15 +67,11 @@ def unshorten(url, quality=None):
 def unshorten_tiwi_kiwi(url, quality=None):
     # Some of the videos are available on the first page. If this regex is
     # successfull, then the video is directly available.
-    quality_regex = re.compile(r'[0-9]+x([0-9]+), .+ [a-zA-Z]+')
 
     # On the download page, the download link does not use href, but calls some
     # javascript. After a short inspection of the code, I determined we only
     # need to extract the parameter of the called method to be able to generate
     # the link ourselves.
-    onclick_regex = re.compile(
-        r"download_video\('(.+)','(.+)','(.+)'\)"
-    )
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -96,7 +92,7 @@ def unshorten_tiwi_kiwi(url, quality=None):
 
         # First get the quality
         quality_regex_results = re.search(
-            quality_regex,
+            r'[0-9]+x([0-9]+), .+ [a-zA-Z]+',
             tr.find_all('td')[1].text
         )
 
@@ -111,7 +107,7 @@ def unshorten_tiwi_kiwi(url, quality=None):
 
         # Then extract the download url
         onclick_regex_result = re.search(
-            onclick_regex,
+            r"download_video\('(.+)','(.+)','(.+)'\)",
             tr.find('a').get('onclick')
         )
 
@@ -175,14 +171,12 @@ def unshorten_solidfiles(url, quality=None):
 def unshorten_vidstream(url, quality=None):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
-    quality_regex = re.compile(r'Download \((\d+)P - .+')
-
     sources = []
 
     for link in soup.select('.mirror_link a'):
         sources.append(Source(
             link.get('href'),
-            int(quality_regex.search(link.text).group(1))
+            int(re.search(r'Download \((\d+)P - .+', link.text).group(1))
         ))
 
     logger.debug('[vidstream] found {} sources'.format(len(sources)))
@@ -192,13 +186,12 @@ def unshorten_vidstream(url, quality=None):
 
 def unshorten_mp4upload(url, quality=None):
     html = requests.get(url).text
-    src_regex = re.compile(r'"file": "(.+)"')
 
     if 'File was deleted' in html:
         logger.warning('[mp4upload] File at {} was deleted'.format(url))
         return []
 
-    src = src_regex.search(html).group(1)
+    src = re.search(r'"file": "(.+)"', html).group(1)
 
     if quality is None:
         logger.warning('[mp4upload] quality was not passed')
@@ -208,14 +201,13 @@ def unshorten_mp4upload(url, quality=None):
 
 
 def unshorten_stream_moe(url, quality=None):
-    base64_regex = re.compile(r'atob\(\'(.+)\'\)')
-    src_regex = re.compile(r'<source src="(.+?)" type="')
-
     html = requests.get(url).text
     logger.debug(html)
-    frame_html = str(base64.b64decode(base64_regex.search(html).group(1)))
+    frame_html = str(base64.b64decode(
+        re.search(r'atob\(\'(.+)\'\)', html).group(1)
+    ))
 
-    src = src_regex.search(frame_html).group(1)
+    src = re.search(r'<source src="(.+?)" type="', frame_html).group(1)
     logger.debug('[stream.moe] found source {}'.format(src))
 
     if quality is None:
@@ -226,8 +218,7 @@ def unshorten_stream_moe(url, quality=None):
 
 
 def unshorten_bakavideo(url, quality=None):
-    id_regex = re.compile(r'https?://bakavideo.tv/embed/(.+)')
-    id = id_regex.search(url).group(1)
+    id = re.search(r'https?://bakavideo.tv/embed/(.+)', url).group(1)
 
     data = requests.get(
         'https://bakavideo.tv/get/files.embed?f={}'.format(id)
@@ -258,10 +249,9 @@ def unshorten_google_drive(url, quality=None):
     import js2py
 
     html = requests.get(url).text
-    fmt_stream_map_regex = re.compile(r'\["fmt_stream_map"\,(".+?")\]')
 
     javascript = '{}.split(\'|\')[1]'.format(
-        fmt_stream_map_regex.search(html).group(1)
+        re.search(r'\["fmt_stream_map"\,(".+?")\]', html).group(1)
     )
 
     logger.debug('Executing: {}'.format(javascript))

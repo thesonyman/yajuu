@@ -1,13 +1,11 @@
 import logging
 import time
-import pip
 
 import click
 import click_log
 
-from yajuu.cli.download import download
-from yajuu.cli.configure import plex
-from yajuu.media.types import MEDIA_TYPES
+from yajuu.types import MEDIA_TYPES_KEYS
+from yajuu.cli import download, plex
 
 # Use 'yajuu' instead of __name__, because since __name__ is 'yajuu.yajuu', the
 # sub-packages won't be affected by the configuration.
@@ -25,10 +23,12 @@ def cli():
 
 @click.group()
 @click.option(
-    '--media-type', type=click.Choice(MEDIA_TYPES.keys()), default='anime'
+    '--media-type', type=click.Choice(MEDIA_TYPES_KEYS), default='anime'
 )
 @click.pass_context
 def media(ctx, media_type):
+    from yajuu.media.types import MEDIA_TYPES
+
     ctx.obj['START_TIME'] = time.time()
     ctx.obj['MEDIA_TYPE'] = media_type
     ctx.obj['MEDIA_CLASS'] = MEDIA_TYPES[media_type][0]
@@ -38,6 +38,8 @@ def media(ctx, media_type):
 @click.command()
 @click.option('--branch', default='master')
 def upgrade(branch):
+    import pip
+
     pip.main([
         'install', '--upgrade',
         'git+https://github.com/vivescere/yajuu@{}'.format(branch)

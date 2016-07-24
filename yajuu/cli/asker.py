@@ -1,20 +1,27 @@
 from abc import ABCMeta, abstractmethod
 import getpass
 
-try:
-    import inquirer
-except ImportError:
-    inquirer = None
-
 
 class Asker(metaclass=ABCMeta):
 
-    @staticmethod
-    def factory():
+    CLASS = None
+
+    @classmethod
+    def factory(cls):
+        if cls.CLASS is not None:
+            return cls.CLASS()
+
+        try:
+            import inquirer
+        except ImportError:
+            inquirer = None
+
         if inquirer is not None:
-            return InquirerAsker()
+            cls.CLASS = InquirerAsker
         else:
-            return StandardAsker()
+            cls.CLASS = StandardAsker
+
+        return cls.CLASS()
 
     @abstractmethod
     def text(self, message, hidden=False):
@@ -35,8 +42,11 @@ class Asker(metaclass=ABCMeta):
 
 class InquirerAsker(Asker):
 
+    def __init__(self):
+        self.inquirer = __import__('inquirer')
+
     def _get_answer(self, question):
-        answers = inquirer.prompt([question])
+        answers = self.inquirer.prompt([question])
 
         if not answers:
             return None
@@ -44,16 +54,18 @@ class InquirerAsker(Asker):
         return answers[list(answers.keys())[0]]
 
     def text(self, message, hidden=False):
-        cls = inquirer.Password if hidden else inquirer.Text
+        cls = self.inquirer.Password if hidden else self.inquirer.Text
         question = cls('field', message=message)
         return self._get_answer(question)
 
     def confirm(self, message, default=False):
-        question = inquirer.Confirm('field', message=message, default=default)
+        question = self.inquirer.Confirm(
+            'field', message=message, default=default
+        )
         return self._get_answer(question)
 
     def select_one(self, message, data):
-        question = inquirer.List(
+        question = self.inquirer.List(
             'field', message=message, choices=[x[0] for x in data]
         )
 
@@ -69,7 +81,7 @@ class InquirerAsker(Asker):
         return None
 
     def select_multiple(self, message, data):
-        question = inquirer.Checkbox(
+        question = self.inquirer.Checkbox(
             'field', message=message, choices=[x[0] for x in data]
         )
 
