@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 from yajuu.extractors.anime.anime_extractor import AnimeExtractor
 from yajuu.extractors.search_result import SearchResult
-from yajuu.extractors.unshorten import unshorten
+from yajuu.unshorteners import unshorten
 from yajuu.media.sources.source import Source
 
 

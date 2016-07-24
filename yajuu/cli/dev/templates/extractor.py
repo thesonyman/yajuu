@@ -3,7 +3,7 @@ import concurrent.futures
 from yajuu.extractors.anime.anime_extractor import AnimeExtractor
 from yajuu.extractors.search_result import SearchResult{% if import_source %}
 from yajuu.media.sources.source import Source{%endif%}{% if import_unshorten %}
-from yajuu.extractors.unshorten import unshorten{% endif %}
+from yajuu.unshorteners import unshorten{% endif %}
 
 
 class {{class_name}}(AnimeExtractor):
