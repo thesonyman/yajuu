@@ -18,7 +18,7 @@ def get_filename(url, extension):
     is_special = False
 
     for c in tldextract.extract(url).domain:
-        if c.isalpha() or c.isdigit():
+        if c.isalpha():
             filename += '_' + c if is_special else c
             is_special = False
         else:
@@ -32,7 +32,7 @@ def get_classname(url, suffix):
     is_special = True
 
     for c in tldextract.extract(url).domain:
-        if c.isalpha() or c.isdigit():
+        if c.isalpha():
             class_name += c.upper() if is_special else c
             is_special = False
         else:
@@ -91,7 +91,7 @@ def generate_unshortener():
     logger.info('The files were written.')
 
 
-def generate_extractor():
+def generate_extractor(media_type):
     env = {}
     env['url'] = asker.text('Enter the url of the website')
 
@@ -103,7 +103,7 @@ def generate_extractor():
     file_name = get_filename(env['url'], 'py')
 
     file_name = asker.text('Enter the filename', default=file_name)
-    path = 'yajuu/extractors/anime/{}'.format(file_name)
+    path = 'yajuu/extractors/{}/{}'.format(media_type, file_name)
 
     if os.path.exists(path):
         logger.error('The file already exists. Exiting.')
@@ -135,7 +135,9 @@ def generate_extractor():
 
     logger.info('\nThe extractor has been created.')
 
-    orchestrator = 'yajuu/orchestrators/anime/anime_orchestrator.py'
+    orchestrator = 'yajuu/orchestrators/{}_orchestrator.py'.format(
+        media_type
+    )
 
     with open(orchestrator, 'r') as file:
         lines = file.read().split('\n')
@@ -160,16 +162,16 @@ def generate_extractor():
             return_encountered = False
 
     lines.insert(import_index, 'from yajuu.extractors.{}.{} import {}'.format(
-        'anime', file_name[:-3], class_name
+        media_type, file_name[:-3], env['class_name']
     ))
 
     if not lines[return_index].endswith(','):
         lines[return_index] += ','
 
-    if len(lines[return_index] + ' ' + class_name) > 80:
-        lines.insert(return_index + 1, ' ' * 4 * 3 + class_name)
+    if len(lines[return_index] + ' ' + env['class_name']) > 80:
+        lines.insert(return_index + 1, ' ' * 4 * 3 + env['class_name'])
     else:
-        lines[return_index] += ' ' + class_name
+        lines[return_index] += ' ' + env['class_name']
 
     with open(orchestrator, 'w') as file:
         file.write('\n'.join(lines))

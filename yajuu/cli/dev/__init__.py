@@ -1,6 +1,8 @@
 import click
 import logging
 
+from yajuu.types import MEDIA_TYPES_KEYS
+
 
 @click.group()
 def dev():
@@ -13,9 +15,12 @@ def generate():
 
 
 @click.command()
-def generate_extractor():
+@click.option(
+    '-t', '--media-type', type=click.Choice(MEDIA_TYPES_KEYS), required=True
+)
+def generate_extractor(media_type):
     from yajuu.cli.dev.generate import generate_extractor as gen
-    gen()
+    gen(media_type)
 
 
 @click.command()

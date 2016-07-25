@@ -8,4 +8,6 @@ class MovieOrchestrator(Orchestrator):
         return self.media.metadata['name']
 
     def _get_default_extractors(self):
-        return [IceFilmsExtractor]
+        return [
+            IceFilmsExtractor
+        ]
