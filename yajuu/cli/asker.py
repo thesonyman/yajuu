@@ -53,9 +53,17 @@ class InquirerAsker(Asker):
 
         return answers[list(answers.keys())[0]]
 
-    def text(self, message, hidden=False):
-        cls = self.inquirer.Password if hidden else self.inquirer.Text
-        question = cls('field', message=message)
+    def text(self, message, hidden=False, default=None):
+        if not hidden:
+            if default is None:
+                question = self.inquirer.Text('field', message=message)
+            else:
+                question = self.inquirer.Text(
+                    'field', message=message, default=default
+                )
+        else:
+            question = self.inquirer.Password('field', message=message)
+
         return self._get_answer(question)
 
     def confirm(self, message, default=False):
@@ -101,8 +109,12 @@ class InquirerAsker(Asker):
 
 class StandardAsker(Asker):
 
-    def text(self, message, hidden=False):
-        label = '[?] {}: '.format(message)
+    def text(self, message, hidden=False, default=None):
+        if default is None:
+            label = '[?] {}: '.format(message)
+        else:
+            label = '[?] {} [{}]: '.format(message, default)
+
         user_input = None
 
         try:
@@ -119,6 +131,8 @@ class StandardAsker(Asker):
         finally:
             if user_input is None:
                 print()
+            elif user_input == '':
+                return default
 
             return user_input
 

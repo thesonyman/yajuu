@@ -3,7 +3,7 @@ import concurrent.futures
 
 from yajuu.extractors.anime.anime_extractor import AnimeExtractor
 from yajuu.extractors.search_result import SearchResult
-from yajuu.extractors.unshorteners.utils import get_quality
+from yajuu.unshorteners.utils import get_quality
 from yajuu.media.sources.source import Source
 
 

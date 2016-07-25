@@ -6,7 +6,7 @@ import concurrent.futures
 
 from yajuu.extractors.movie.movie_extractor import MovieExtractor
 from yajuu.extractors.search_result import SearchResult
-from yajuu.extractors.unshorten import unshorten
+from yajuu.unshorteners import unshorten
 
 
 class IceFilmsExtractor(MovieExtractor):

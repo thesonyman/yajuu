@@ -3,14 +3,14 @@ import re
 
 import requests
 
-from yajuu.extractors.unshorteners.utils import get_quality
-from yajuu.extractors.unshorteners.aa import AADecoder
+from yajuu.unshorteners.utils import get_quality
+from yajuu.unshorteners.aa import AADecoder
 from yajuu.media.sources.source import Source
 
 logger = logging.getLogger(__name__)
 
 
-def unshorten_openload(url, quality=None):
+def unshorten(url, quality=None):
     '''Inspired from https://github.com/Zanzibar82/plugin.video.streamondemand/
     blob/bf655c445e77be57ef4ece84f11b5899a41e0939/servers/openload.py.'''
 
