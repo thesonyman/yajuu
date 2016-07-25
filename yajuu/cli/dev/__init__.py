@@ -1,8 +1,6 @@
 import click
 import logging
 
-from yajuu.media.types import MEDIA_TYPES
-
 
 @click.group()
 def dev():
@@ -25,30 +23,36 @@ def generate(*args, **kwargs):
 
 
 @click.group()
-@click.pass_context
-@click.option('-mt', '--media-type', required=True)
-@click.option('-m', '--media', required=True)
-def run(ctx, media_type, media):
+def run():
     logger = logging.getLogger('yajuu')
     logger.setLevel(logging.DEBUG)
 
-    ctx.obj['MEDIA'] = MEDIA_TYPES[media_type.lower()][0](media)
-    ctx.obj['MEDIA_TYPE'] = media_type
-
 
 @click.command()
-@click.pass_context
+@click.option('-mt', '--media-type', required=True)
+@click.option('-m', '--media', required=True)
 @click.option('-f', '--file-name', required=True)
 @click.option('-c', '--class-name', required=True)
 @click.option('-i', '--search-index', type=click.INT)
-def extractor(ctx, file_name, class_name, search_index):
-    from yajuu.cli.dev.run import run_extractor as _run_extractor
-    _run_extractor(
-        ctx.obj['MEDIA'], ctx.obj['MEDIA_TYPE'], file_name, class_name,
-        search_index
-    )
+def extractor(media_type, media, file_name, class_name, search_index):
+    from yajuu.cli.dev.run import run_extractor
+    from yajuu.media.types import MEDIA_TYPES
+
+    media = MEDIA_TYPES[media_type.lower()][0](media)
+
+    run_extractor(media, media_type, file_name, class_name, search_index)
+
+
+@click.command()
+@click.option('-u', '--url', required=True)
+@click.option('-q', '--quality', type=click.INT)
+def unshortener(url, quality):
+    from yajuu.cli.dev.run import run_unshortener
+    run_unshortener(url, quality)
+
 
 run.add_command(extractor)
+run.add_command(unshortener)
 
 
 dev.add_command(shell)

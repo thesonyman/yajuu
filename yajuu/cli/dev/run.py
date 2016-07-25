@@ -4,6 +4,7 @@ import pprint
 
 from yajuu.media.types import MEDIA_TYPES
 from yajuu.extractors.season_extractor import SeasonExtractor
+from yajuu.unshorteners import unshorten
 
 logger = logging.getLogger(__name__)
 
@@ -40,3 +41,8 @@ def run_extractor(media, media_type, file_name, class_name, index):
         extractor.extract(result.identifier)
 
     logger.info(pprint.pformat(extractor.sources, indent=4))
+
+
+def run_unshortener(url, quality):
+    sources = unshorten(url, quality=quality)
+    pprint.pprint(sources, indent=4)
