@@ -7,13 +7,25 @@ def dev():
     pass
 
 
+@click.group()
+def generate():
+    pass
+
+
 @click.command()
-@click.option('-t', '--type', type=click.Choice([
-    'extractor', 'unshortener'
-]), required=True)
-def generate(*args, **kwargs):
-    from yajuu.cli.dev.generate import generate as _generate
-    _generate(*args, **kwargs)
+def generate_extractor():
+    from yajuu.cli.dev.generate import generate_extractor as gen
+    gen()
+
+
+@click.command()
+def generate_unshortener():
+    from yajuu.cli.dev.generate import generate_unshortener as gen
+    gen()
+
+
+generate.add_command(generate_extractor, name='extractor')
+generate.add_command(generate_unshortener, name='unshortener')
 
 
 @click.group()
@@ -28,7 +40,7 @@ def run():
 @click.option('-f', '--file-name', required=True)
 @click.option('-c', '--class-name', required=True)
 @click.option('-i', '--search-index', type=click.INT)
-def extractor(media_type, media, file_name, class_name, search_index):
+def run_extractor(media_type, media, file_name, class_name, search_index):
     from yajuu.cli.dev.run import run_extractor
     from yajuu.media.types import MEDIA_TYPES
 
@@ -40,13 +52,13 @@ def extractor(media_type, media, file_name, class_name, search_index):
 @click.command()
 @click.option('-u', '--url', required=True)
 @click.option('-q', '--quality', type=click.INT)
-def unshortener(url, quality):
+def run_unshortener(url, quality):
     from yajuu.cli.dev.run import run_unshortener
     run_unshortener(url, quality)
 
 
-run.add_command(extractor)
-run.add_command(unshortener)
+run.add_command(run_extractor, name='extractor')
+run.add_command(run_unshortener, name='unshortener')
 
 
 dev.add_command(generate)

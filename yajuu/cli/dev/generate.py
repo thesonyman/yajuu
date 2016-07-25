@@ -13,13 +13,6 @@ logger = logging.getLogger(__name__)
 asker = Asker.factory()
 
 
-def generate(type):
-    if type == 'extractor':
-        generate_extractor()
-    elif type == 'unshortener':
-        generate_unshortener()
-
-
 def get_filename(url, extension):
     filename = ''
     is_special = False
