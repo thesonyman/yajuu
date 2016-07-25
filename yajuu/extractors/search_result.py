@@ -45,6 +45,6 @@ class SearchResult:
         return re.sub(version_regex, '', title)
 
     def __repr__(self):
-        return '<SearchResult version="{}" title="{}">'.format(
-            self.version.name, self.title
+        return '<SearchResult identifier="{}" title="{}">'.format(
+            self.identifier, self.title
         )

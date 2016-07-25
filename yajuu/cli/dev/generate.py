@@ -145,38 +145,40 @@ def generate_extractor():
     orchestrator = 'yajuu/orchestrators/anime/anime_orchestrator.py'
 
     with open(orchestrator, 'r') as file:
-        content = file.read().split('\n')
+        lines = file.read().split('\n')
 
     import_encountered = False
-
     import_index = None
+
+    return_encountered = False
     return_index = None
 
-    for index, line in enumerate(content):
+    for i, line in enumerate(lines):
         if line.startswith('from yajuu.extractors.'):
-            import_index = index + 1
+            import_encountered = True
+        elif import_encountered:
+            import_index = i
+            import_encountered = False
 
-        if '_get_default_extractors' in line and return_index is None:
-            return_index = index + 2
+        if line.strip() == 'return [':
+            return_encountered = True
+        elif line.strip() == ']' and return_encountered:
+            return_index = i
+            return_encountered = False
 
-    content.insert(
-        import_index,
-        'from yajuu.extractors.anime.{} import {}'.format(
-            file_name[:-3],  # Remove '.py'
-            class_name
-        )
-    )
+    lines.insert(import_index, 'from yajuu.extractors.{}.{} import {}'.format(
+        'anime', file_name[:-3], class_name
+    ))
 
-    content.insert(
-        return_index, '        return [{}]\n'.format(class_name)
-    )
+    if not lines[return_index].endswith(','):
+        lines[return_index] += ','
+
+    if len(lines[return_index] + ' ' + class_name) > 80:
+        lines.insert(return_index + 1, ' ' * 4 * 3 + class_name)
+    else:
+        lines[return_index] += ' ' + class_name
 
     with open(orchestrator, 'w') as file:
-        file.write('\n'.join(content))
+        file.write('\n'.join(lines))
 
-    logger.info(
-        'The extractor has been added and selected as the only extractor.'
-    )
-    logger.warning(
-        'Don\'t forget to re-edit the orchestrator when you\'re done.'
-    )
+    logger.info('The extractor has been added to the orchestrator.')
