@@ -4,10 +4,38 @@ import getpass
 
 class Asker(metaclass=ABCMeta):
 
+    """Abstract class that defines an helper, which prompts the user for input.
+
+    On linux or osx, we can use curses to get a nicer prompt, however on
+    windows we must use the builtin input method. The sub-classes of this
+    class allow to get user input without worrying about the envrionnment.
+
+    The setup.py file decides to remove the 'inquirer' and 'reachar' modules on
+    windows, so that we can easilly check if the user wants to use curses.
+
+    Example of correct use:
+    >>> asker = Asker.factory()
+    >>> asker.confirm("Do you want to do this?")
+    [?] Do you want to do this? (y/N): n
+
+    False
+    >>>
+
+    Note:
+        Always use the factory method to create the instances, except for
+        testing.
+    """
+
+    """class: holds the correct class to instantiate."""
     CLASS = None
 
     @classmethod
     def factory(cls):
+        """Return an instance of one of the asker sub-classes.
+
+        This method automatically selects the best class to use for the
+        envrionnment."""
+
         if cls.CLASS is not None:
             return cls.CLASS()
 
@@ -24,23 +52,88 @@ class Asker(metaclass=ABCMeta):
         return cls.CLASS()
 
     @abstractmethod
-    def text(self, message, hidden=False):
+    def text(self, message, hidden=False, default=None):
+        """Prompt the user for a text input (question).
+
+        The prompt will look like '[?] {message} [{default}]:'.
+
+        Args:
+            message (str): The string displayed to the user.
+            hidden (Optional[bool]): Whether the user input is displayed.
+                Useful for passwords.
+            default (Optional[str]): A default value, that the user can erase.
+
+        Returns:
+            The string that the user entered, or None if the user cancelled.
+
+        """
+        
         pass
 
     @abstractmethod
     def confirm(self, message, default=False):
+        """Prompt the user for a yes / no question.
+
+        The prompt will look like '[?] {message} (Y/n):'.
+
+        Args:
+            message (str): The string displayed to the user.
+            default (Optional[bool]): A default value, False if not specified.
+
+        Returns:
+            The boolean that the user entered, or None if the user cancelled.
+
+        """
         pass
 
     @abstractmethod
     def select_one(self, message, data):
+        """Prompt the user to select an option from a list.
+
+        The prompt will look like '[?] {message}:'.
+
+        Args:
+            message (str): The string displayed to the user.
+            data (list): A list of tuples, each containing first the printed
+                value and the the returned value. The return value can be
+                anything.
+
+        Returns:
+            The returned value of the selected item, or None if the user
+            cancelled.
+
+        """
+
         pass
 
     @abstractmethod
     def select_multiple(self, message, data):
+        """Prompt the user to select multiple options from a list.
+
+        The prompt will look like '[?] {message}:'.
+
+        Args:
+            message (str): The string displayed to the user.
+            data (list): A list of tuples, each containing first the printed
+                value and the the returned value. The return value can be
+                anything.
+
+        Returns:
+            list: The return values of the selected items, or None if the
+            user cancelled.
+
+        """
+
         pass
 
 
 class InquirerAsker(Asker):
+
+    """Uses the inquirer module to prompt the user.
+
+    Note:
+        Don't instantiate this class manually, use the Asker factory method.
+    """
 
     def __init__(self):
         self.inquirer = __import__('inquirer')
@@ -108,6 +201,12 @@ class InquirerAsker(Asker):
 
 
 class StandardAsker(Asker):
+
+    """Uses the builtin python methods to prompt the user.
+
+    Note:
+        Don't instantiate this class manually, use the Asker factory method.
+    """
 
     def text(self, message, hidden=False, default=None):
         if default is None:
