@@ -28,12 +28,12 @@ class TheTvDbProvider:
                 show = results[0]
             else:
                 identifier = select_result(list(
-                    (x.identifier, x.SeriesName) for x in results
+                    (x.id, x.SeriesName) for x in results
                 ))
 
                 # We'll use the last iteration show variable
                 for show in results:
-                    if show.identifier == identifier:
+                    if show.id == identifier:
                         break
 
             # Fetch the metadata
