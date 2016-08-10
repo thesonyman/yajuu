@@ -27,63 +27,10 @@ def get_plex():
         )
 
 
-def download_single_media(dump, path, media_config, media, orchestrator):
+def download_media(dump, path, media_config, media, orchestrator):
     if config['plex_reload']['enabled']:
         get_plex()
 
-    sources = get_sources(media, orchestrator)
-
-    logger.debug(sources)
-
-    path_params = {
-        'movie_name': media.metadata['name'],
-        'movie_date': media.metadata['year']
-    }
-
-    download_file(
-        dump, media, path, media_config['file'], path_params, sources
-    )
-
-
-def download_season_media(
-    dump, path, media_config, media, seasons, orchestrator
-):
-    if config['plex_reload']['enabled']:
-        get_plex()
-
-    sources = get_sources(media, orchestrator)
-
-    for season, season_sources in sources.items():
-        season_path = os.path.join(
-            os.path.join(path, media.metadata['name']),
-            media_config['season'].format(
-                season_number=season
-            )
-        )
-
-        logger.info('{} season {}'.format(
-            'Dumping' if dump else 'Downloading', season
-        ))
-
-        for episode_number, sources in season_sources.items():
-            logger.info('{} episode {}/{} of season {}'.format(
-                'Dumping' if dump else 'Downloading',
-                episode_number, len(media._seasons[season]), season
-            ))
-
-            path_params = {
-                'anime_name': media.metadata['name'],
-                'season_number': season,
-                'episode_number': episode_number
-            }
-
-            download_file(
-                dump, media, season_path, media_config['episode'], path_params,
-                sources
-            )
-
-
-def get_sources(media, orchestrator):
     logger.info('-> Starting downloads for media {}'.format(
         media.metadata['name']
     ))
@@ -91,13 +38,21 @@ def get_sources(media, orchestrator):
     sources = orchestrator.extract()
 
     logger.debug('The orchestrator just finished.')
-    return sources
+    logger.debug(sources)
+
+    media.download(sources, dump=dump)
 
 
-def download_file(dump, media, directory, format, path_params, sources):
+
+def download_file(dump, media, format, path_params, sources, directory=None):
     if len(glob.glob(format.format(ext='*', **path_params))) > 0:
         logger.info('The file already exists.')
         return
+
+    # Get the directory to download the file
+    if directory is None:
+        media_config = media.get_path_config()
+        directory = os.path.join(config['paths']['base'], media_config['base'])
 
     # We need to know, after iterating over the sources, is the downloaded
     # succeeded or not.

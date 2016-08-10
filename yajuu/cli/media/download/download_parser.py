@@ -91,7 +91,7 @@ def validate_season_media(context, param, values):
             )
 
         for season in seasons:
-            if season in media.get_seasons():
+            if season in media.metadata['seasons'].keys():
                 continue
 
             raise click.BadParameter(

@@ -1,73 +1,158 @@
-'''Provides the base implementation of the media class, that defines the core
-behavior of all media.'''
+"""Provides the base implementation of the media class."""
 
+import logging
 from abc import ABCMeta, abstractmethod
-import sys
 
 from yajuu.cli.asker import Asker
-
-asker = Asker.factory()
+from yajuu.cli.media.download.downloader import download_file
 
 
 class Media(metaclass=ABCMeta):
 
-    '''Base abstract class for a media. It can be extended to implement for
-    example the Movie or TV Show classes.
+    """Abstract class for a media.
 
-    The purpose for the class extending this one is to get data from the
-    internet, just by passing a query. It should provide a seamless interface
-    to get data in a clean way.'''
+    It should represent for example a movie, or a tv show. This class can be
+    used to get all sort of information from the media type, or the element
+    itself.
+
+    It also contains the logic to download the specific type of media.
+
+    """
 
     class MediaNotFoundException(Exception):
+
+        """Thrown when a media could not be found."""
+
         pass
 
     def __init__(self, query):
+        """Initialize the media.
+
+        Args:
+            query (str): The string to search for (media name).
+
+        """
+
+        self.logger = logging.getLogger(__name__)
+        self.asker = Asker.factory()
+        self.query = query
+
+        # Contains all the metadata about the media (name, date, ..)
         self.metadata = {}
-        self._update_metadata(query)
-        self.metadata.update({'query': query})
+
+        # Fetch the metadata
+        self._update_metadata()
 
     @abstractmethod
-    def get_name(self):
+    def _update_metadata(self):
+        """Update the self.metadata object by fetching data.
+
+        Also searches to get the correct result. May use the _select_result
+        method to select the correct result.
+
+        Note:
+            You MUST implement the 'id' key, or edit the __eq__ method. The
+            metadata should also include the 'name' key.
+
+            You should not add media prefixes, such as 'movie_id'.
+
+        Returns:
+            None: Nothing, as the metadata is stored in the self.metadata dict.
+
+        """
+
         pass
 
-    def _select_result(self, query, results):
-        '''Provides a base implementation to select a result from a list.'''
+    @abstractmethod
+    def get_path_config(self):
+        """Get the path configuration relative to the media.
+
+        The dict should be stored in config['path']['medias'][MEDIA_TYPE].
+
+        Note:
+            See the config.py file, in the root folder.
+
+        Returns:
+            dict: The configuration.
+
+        """
+
+        pass
+
+    def download(self, sources, dump=False):
+        """Contains the logic to download each needed file.
+
+        It should call the cli/downloader.py download_file method.
+
+        Args:
+            sources (dict): Sources extracted using an orchestrator.
+            dump (bool): Whether you need to dump the source or download it.
+
+        Returns:
+            None: nothing should be returned, any result will be ignored.
+
+        """
+
+        # Logic to download a single file (movie, ..)
+
+        path_params = {
+            'name': self.metadata['name'],
+            'date': self.metadata['year'] if 'year' in self.metadata else 'N/A'
+        }
+
+        file_format = self.get_path_config()['file']
+
+        download_file(dump, self, file_format, path_params, sources)
+
+    def _select_result(self, results):
+        """Basic method to select the correct result from a list.
+
+        When the media class is constructed, somtimes we need to prompt the
+        user for the correct title. This method provides a basic
+        implementation.
+
+        Note:
+            This method trims the results to a maximum of 10 items.
+
+        Args:
+            results (list): A list of items to select.
+
+        Returns:
+            The returned value of the selected item, or None if the user
+            cancelled.
+
+        """
 
         results = results[:10]
 
-        return asker.select_one(
-            "Which title is correct for input '{}'?".format(query),
+        return self.asker.select_one(
+            "Which title is correct for input '{}'?".format(self.query),
             [(x[1], x[0]) for x in results]
         )
 
-    @abstractmethod
     def __eq__(self, other):
-        pass
+        """Defines whether a media object is the same as another one.
 
-    @abstractmethod
+        This method check for the id on the metadata object by default.
+
+        Returns:
+            bool: whether it is the same.
+
+        """
+
+        self_id = self.metadata['id']
+        other_id = other.metadata['id']
+
+        return isinstance(other, self.__class__) and self_id == other_id
+
     def __ne__(self, other):
-        pass
+        """Defines whether a media object is NOT the same as another one.
 
-    @abstractmethod
-    def get_file_path(self):
-        '''Returns a string which defines where the files will be stored.'''
-        pass
+        This method returns the opposite of the __eq__ method by default.
 
-    @abstractmethod
-    def _update_metadata(self, query):
-        '''Returns a metadata dict from the query.'''
+        Returns:
+            bool: whether it NOT is the same.
 
-        pass
+        """
 
-    @abstractmethod
-    def list_files(self):
-        '''Returns a list of all the downloaded files. The list can be a dict
-        if needed.'''
-
-        pass
-
-    @abstractmethod
-    def download(self):
-        '''Downloads all the available sub-medias (episodes, tracks, ...).'''
-
-        pass
+        return not self.__eq__(other)

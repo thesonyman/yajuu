@@ -32,7 +32,7 @@ DEFAULT_CONFIG = {
             },
             'movie': {
                 'base': 'Movies',
-                'file': '{movie_name} ({movie_date}).{ext}',
+                'file': '{name} ({date}).{ext}',
                 'version': 'any'
             }
         }

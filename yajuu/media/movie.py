@@ -1,26 +1,24 @@
-import datetime
+'''Provides the implementation of the movie class.'''
 
 from yajuu.media.media import Media
 from yajuu.media.providers.imdb import ImdbProvider
+from yajuu.config import config
 
 
 class Movie(ImdbProvider, Media):
 
-    def get_name(self):
-        return 'Movie'
+    """Media class the defines an anime.
 
-    def _update_metadata(self, query):
-        item = self._get_result(query, self._select_result)
+    Currently fetches data using the imdb provider.
+    
+    """
+
+    def get_path_config(self):
+        return config['paths']['medias']['movie']
+
+    def _update_metadata(self):
+        item = self._get_result(self.query, self._select_result)
 
         self.metadata['id'] = item['imdb_id']
         self.metadata['name'] = item['title']
         self.metadata['year'] = item['year']
-
-    def list_files(self):
-        return []
-
-    def download(self):
-        pass
-
-    def get_file_path(self):
-        pass
