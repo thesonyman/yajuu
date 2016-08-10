@@ -94,14 +94,15 @@ def get_sources(media, orchestrator):
     return sources
 
 
-def download_file(dump, media, format, path_params, sources):
+def download_file(dump, media, format, path_params, sources, directory=None):
     if len(glob.glob(format.format(ext='*', **path_params))) > 0:
         logger.info('The file already exists.')
         return
 
     # Get the directory to download the file
-    media_config = media.get_path_config()
-    directory = os.path.join(config['paths']['base'], media_config['base'])
+    if directory is None:
+        media_config = media.get_path_config()
+        directory = os.path.join(config['paths']['base'], media_config['base'])
 
     # We need to know, after iterating over the sources, is the downloaded
     # succeeded or not.
