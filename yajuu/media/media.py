@@ -112,7 +112,8 @@ class Media(metaclass=ABCMeta):
         implementation.
 
         Note:
-            This method trims the results to a maximum of 10 items.
+            This method trims the results to a maximum of 10 items. Duplicates
+            will be removed.
 
         Args:
             results (list): A list of items to select.
@@ -123,6 +124,16 @@ class Media(metaclass=ABCMeta):
 
         """
 
+        # Remove the duplicates (title only)
+        filtered_results = []
+        filtered_keys = []
+
+        for result in results:
+            if result[1] not in filtered_keys:
+                filtered_results.append(result)
+                filtered_keys.append(result[1])
+
+        # Filter to ten results
         results = results[:10]
 
         return self.asker.select_one(
