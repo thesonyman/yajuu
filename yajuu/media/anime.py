@@ -25,10 +25,14 @@ class Anime(TheTvDbProvider, SeasonMedia):
         self.metadata['seasons'] = {}
 
         for season in show:
-            self.metadata['seasons'][season.season_number] = {}
+            season_data = {}
 
             for episode in season:
-                episode = {
+                episode_data = {
                     'number': episode.EpisodeNumber,
                     'name': episode.EpisodeName
                 }
+
+                season_data[episode.EpisodeNumber] = episode_data
+
+            self.metadata['seasons'][season.season_number] = season_data
