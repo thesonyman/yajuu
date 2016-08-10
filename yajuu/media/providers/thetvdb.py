@@ -8,15 +8,6 @@ class TheTvDbProvider:
 
     '''Helper class to get data from thetvdb api.'''
 
-    def __eq__(self, other):
-        return (
-            isinstante(other, self.__class__) and
-            self.metadata['id'] == other.metadata['id']
-        )
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
     def _get_result(self, query, select_result):
         # First, fetch the show itself
 
