@@ -7,6 +7,7 @@ from yajuu.cli.media import media
 from yajuu.cli.configure import configure
 from yajuu.cli.upgrade import upgrade
 from yajuu.cli.dev import dev
+from yajuu.cli.version import version
 
 # Use 'yajuu' instead of __name__, because since __name__ is 'yajuu.yajuu', the
 # sub-packages won't be affected by the configuration.
@@ -22,6 +23,7 @@ def cli():
         logging.getLogger('requests').setLevel(logging.WARNING)
 
 
+cli.add_command(version)
 cli.add_command(media)
 cli.add_command(configure)
 cli.add_command(upgrade)
