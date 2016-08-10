@@ -29,7 +29,8 @@ def unshorten(url, quality=None):
         'tusfiles.net': 'tusfiles',
         'upload.af': 'upload_af',
         'openload.co': 'openload',
-        'playbb.me': 'playbb'
+        'playbb.me': 'playbb',
+        'videonest.net': 'videonest'
     }
 
     host = urllib.parse.urlsplit(url).netloc
