@@ -14,7 +14,7 @@ class Anime(TheTvDbProvider, SeasonMedia):
     """
 
     def get_path_config(self):
-        return config['path']['medias']['anime']
+        return config['paths']['medias']['anime']
 
     def _update_metadata(self):
         show = self._get_result(self.query, self._select_result)

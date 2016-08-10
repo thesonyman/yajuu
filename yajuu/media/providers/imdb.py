@@ -25,7 +25,7 @@ class ImdbProvider:
                 for x in results
             ])
 
-            identifier = select_result(query, formatted_results)
+            identifier = select_result(formatted_results)
 
             for item in results:
                 if item['imdb_id'] == identifier:

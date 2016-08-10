@@ -14,7 +14,7 @@ class Movie(ImdbProvider, Media):
     """
 
     def get_path_config(self):
-        return config['path']['medias']['movie']
+        return config['paths']['medias']['movie']
 
     def _update_metadata(self):
         item = self._get_result(self.query, self._select_result)

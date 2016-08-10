@@ -27,7 +27,7 @@ class TheTvDbProvider:
             elif len(results) == 1:
                 show = results[0]
             else:
-                identifier = select_result(query, list(
+                identifier = select_result(list(
                     (x.identifier, x.SeriesName) for x in results
                 ))
 

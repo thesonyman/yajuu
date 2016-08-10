@@ -9,11 +9,10 @@ import requests
 import tabulate
 
 from yajuu.media.sources.source import Source
+from yajuu.media.movie import Movie
 from yajuu.config import config
 from yajuu.cli.asker import Asker
-from yajuu.cli.media.download.downloader import (
-    download_single_media, download_season_media
-)
+from yajuu.cli.media.download.downloader import download_media
 from yajuu.types import MEDIA_TYPES_KEYS
 
 logger = logging.getLogger(__name__)
@@ -25,7 +24,7 @@ def download(ctx, media, skip_confirmation, automatic, dump):
     global automatic_mode
     automatic_mode = automatic
 
-    # Since we can't change the name
+    # Since we can't change the name before
     medias = media
     del media
 
@@ -53,10 +52,7 @@ def download(ctx, media, skip_confirmation, automatic, dump):
         data.insert(1, medias_path)
         data.insert(2, media_config)
 
-        if media_type == 'season':
-            download_season_media(*data)
-        else:
-            download_single_media(*data)
+        download_media(*data)
 
     logger.info('\nDone! Yajuu took {} to complete.'.format(
         time.strftime('%H hours, %M minutes and %S seconds', time.gmtime(
@@ -136,7 +132,7 @@ def create_orchestrators(ctx, medias):
             orchestrator.search(select_result=select_result)
 
             orchestrators.append((
-                'season', (media, seasons, orchestrator)
+                'season', (media, orchestrator)
             ))
         else:
             orchestrator = ctx.obj['ORCHESTRATOR_CLASS'](data)
@@ -156,12 +152,8 @@ def select_result(extractor, query, message, results):
 
     logger.debug('{} found {} results'.format(extractor_name, len(results)))
 
-    for key in MEDIA_TYPES_KEYS:
-        if extractor.media.get_name().lower() == key:
-            break
-
     default_version = config['paths']['version']
-    media_version = config['paths']['medias'][key]['version']
+    media_version = extractor.media.get_path_config()['version']
 
     if media_version != 'any' and default_version != 'any':
         if not media_version or media_version == '':
@@ -180,7 +172,7 @@ def select_result(extractor, query, message, results):
     media_title = extractor.media.metadata['name'].lower().strip()
     alternate_title = None
 
-    if extractor.media.get_name() == 'Movie':
+    if isinstance(extractor.media, Movie):
         media_title = '{} ({})'.format(
             media_title, extractor.media.metadata['year']
         )
