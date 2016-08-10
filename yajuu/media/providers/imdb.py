@@ -1,20 +1,11 @@
-from imdbpie import Imdb
+'''Provides bindings to the imdb api.'''
 
-from yajuu.config import config
+from imdbpie import Imdb
 
 
 class ImdbProvider:
 
     '''Helper class to get data from thetvdb api.'''
-
-    def __eq__(self, other):
-        return (
-            isinstante(other, self.__class__) and
-            self.metadata['id'] == other.metadata['id']
-        )
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
 
     def _get_result(self, query, select_result):
         not_found_exception = self.MediaNotFoundException(
@@ -34,10 +25,10 @@ class ImdbProvider:
                 for x in results
             ])
 
-            id = select_result(query, formatted_results)
+            identifier = select_result(query, formatted_results)
 
             for item in results:
-                if item['imdb_id'] == id:
+                if item['imdb_id'] == identifier:
                     break
 
         return item

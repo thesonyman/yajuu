@@ -1,3 +1,5 @@
+'''Provides bindings to the tvdb api.'''
+
 from pytvdbapi import api
 from pytvdbapi.error import TVDBIndexError
 
@@ -15,23 +17,23 @@ class TheTvDbProvider:
             'Could not find the anime on thetvdb.'
         )
 
-        db = api.TVDB(config['thetvdb']['api_key'])
+        database = api.TVDB(config['thetvdb']['api_key'])
 
         try:
-            results = db.search(query, config['thetvdb']['language'])
+            results = database.search(query, config['thetvdb']['language'])
 
             if len(results) == 0:
                 raise not_found_exception
             elif len(results) == 1:
                 show = results[0]
             else:
-                id = select_result(query, list(
-                    (x.id, x.SeriesName) for x in results
+                identifier = select_result(query, list(
+                    (x.identifier, x.SeriesName) for x in results
                 ))
 
                 # We'll use the last iteration show variable
                 for show in results:
-                    if show.id == id:
+                    if show.identifier == identifier:
                         break
 
             # Fetch the metadata
