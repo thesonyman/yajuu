@@ -22,6 +22,5 @@ class AnimeOrchestrator(SeasonOrchestrator):
         return [
             AnimeChibyExtractor, AnimeHavenExtractor, GogoAnimeIoExtractor,
             HtvanimeExtractor, MasteraniExtractor, RawrAnimeExtractor,
-            MoeTubeExtractor, KissAnimeExtractor, ChiaAnimeCoExtractor,
-            AnimeFrostExtractor
+            MoeTubeExtractor, KissAnimeExtractor, AnimeFrostExtractor
         ]
