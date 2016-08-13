@@ -18,9 +18,9 @@ class SeasonOrchestrator(Orchestrator):
     def _create_extractors(self, extractors):
         _extractors = {}
 
-        for season in self._seasons:
+        for season, range_ in self._seasons.items():
             _extractors[season] = dict(
-                (x(self.media, season), None) for x in extractors.copy()
+                (x(self.media, season, range_), None) for x in extractors.copy()
             )
 
         return _extractors

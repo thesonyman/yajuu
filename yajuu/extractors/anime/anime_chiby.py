@@ -170,6 +170,9 @@ class AnimeChibyExtractor(AnimeExtractor):
         except ValueError:
             return
 
+        if not self._should_process(episode_number):
+            return
+
         self.logger.info('Processing episode {}'.format(
             episode_number
         ))
@@ -194,6 +197,9 @@ class AnimeChibyExtractor(AnimeExtractor):
             episode_number = int(episode_identifier)
         except:
             return None
+
+        if not self._should_process(episode_number):
+            return
 
         self.logger.info('Processing episode {}'.format(
             episode_number

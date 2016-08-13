@@ -33,6 +33,9 @@ class ChiaAnimeCoExtractor(AnimeExtractor):
         results = re.search(r'/Watch/(\d+)/(.+)/episode-(\d{1,3})/', url)
         episode_number = int(results.group(3))
 
+        if not self._should_process(episode_number):
+            return
+
         self.logger.info('Processing episode {}'.format(episode_number))
 
         soup = self._post('http://chiaanime.co/lib/picasa.php', data={

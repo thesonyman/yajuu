@@ -71,6 +71,9 @@ class GogoAnimeIoExtractor(AnimeExtractor):
         soup = self._get(url)
         episode_number = int(soup.select('#default_ep')[0].get('value'))
 
+        if not self._should_process(episode_number):
+            return
+
         self.logger.info('Processing episode {}'.format(episode_number))
 
         self._add_sources(episode_number, unshorten(

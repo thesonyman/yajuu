@@ -81,14 +81,18 @@ def confirm_download(medias, skip_confirmation):
 
             to_download_season.append((
                 media.metadata['name'],
-                ', '.join(str(season) for season in seasons)
+                ', '.join(
+                    '{} ({}-{})'.format(season, *range_)
+                    for season, range_ in seasons.items()
+                )
             ))
         else:
             to_download_single.append((data.metadata['name'],))
 
     if len(to_download_season) > 0:
         logger.info(tabulate.tabulate(
-            to_download_season, headers=['Name', 'Season(s)'], tablefmt='psql'
+            to_download_season, headers=['Name', 'Season(s) and range(s)'],
+            tablefmt='psql'
         ) + '\n')
 
     if len(to_download_single) > 0:

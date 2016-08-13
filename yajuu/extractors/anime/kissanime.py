@@ -35,6 +35,9 @@ class KissAnimeExtractor(AnimeExtractor):
             r'/Anime/.+?/Episode-(\d{3,})\?id=\d+$', link
         ).group(1))
 
+        if not self._should_process(episode_number):
+            return
+
         self.logger.info('Processing episode {}'.format(episode_number))
 
         response, soup = self._get(

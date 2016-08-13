@@ -46,6 +46,9 @@ class MasteraniExtractor(AnimeExtractor):
 
         number = int(episode_details['episode'])
 
+        if not self._should_process(number):
+            return
+
         self.logger.info('Processing episode {}'.format(number))
 
         url = 'http://www.masterani.me/anime/watch/{}/{}'.format(slug, number)

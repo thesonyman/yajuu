@@ -127,6 +127,10 @@ class AnimeHavenExtractor(AnimeExtractor):
             return
 
         episode_number = int(episode_number_search.group(1))
+
+        if not self._should_process(episode_number):
+            return
+
         self.logger.info('Processing episode {}'.format(episode_number))
 
         soup = self._get(link)

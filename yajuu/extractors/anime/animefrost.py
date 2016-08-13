@@ -31,6 +31,9 @@ class AnimeFrostExtractor(AnimeExtractor):
             r'/s/\d+/episode/(\d{1,3})', url
         ).group(1))
 
+        if not self._should_process(episode_number):
+            return
+
         self.logger.info('Processing episode {}'.format(episode_number))
 
         soup = self._get(url)

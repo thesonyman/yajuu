@@ -56,6 +56,9 @@ class AnilinktzExtractor(AnimeExtractor):
         except AttributeError:
             return
 
+        if not self._should_process(episode_number):
+            return
+
         self.logger.info('Processing episode {}'.format(episode_number))
 
         url = 'http://anilinkz.tv' + url

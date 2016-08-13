@@ -59,6 +59,9 @@ class RawrAnimeExtractor(AnimeExtractor):
         version, id, number = data
         number = int(number)
 
+        if not self._should_process(number):
+            return
+
         self.logger.debug('Processing episode {}'.format(number))
 
         id = id[7:]  # Remove '/anime'

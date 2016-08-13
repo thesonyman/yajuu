@@ -62,6 +62,9 @@ class HtvanimeExtractor(AnimeExtractor):
             list(executor.map(self.map_sources, response['data']))
 
     def map_sources(self, episode):
+        if not self._should_process(episode['episode_number']):
+            return
+
         retries = 0
         success = False
         episode_response = None

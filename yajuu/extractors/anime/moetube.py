@@ -41,16 +41,17 @@ class MoeTubeExtractor(AnimeExtractor):
             soup = self._get('http://moetube.net' + link)
             episodes += [x.get('href') for x in soup.select('.episode > a')]
 
-        self._episode_worker(episodes[0])
-
-        # with concurrent.futures.ThreadPoolExecutor(16) as executor:
-        #     list(executor.map(self._episode_worker, episodes))
+        with concurrent.futures.ThreadPoolExecutor(16) as executor:
+            list(executor.map(self._episode_worker, episodes))
 
     def _episode_worker(self, link):
         # First extract the anime and episodes ids
         results = re.search(r'/watch/([0-9]+)/.+?/([0-9]+)', link)
         id = results.group(1)
         episode_number = int(results.group(2))
+
+        if not self._should_process(episode_number):
+            return
 
         self.logger.info('Processing episode {}'.format(episode_number))
 
