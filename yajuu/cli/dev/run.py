@@ -19,7 +19,11 @@ def run_extractor(media, media_type, file_name, class_name, index):
     extractor_cls = getattr(module, class_name)
 
     if issubclass(extractor_cls, SeasonExtractor):
-        extractor = extractor_cls(media, 1)
+        episodes = list(media.metadata['seasons'][
+            list(media.metadata['seasons'])[0]
+        ].keys())
+
+        extractor = extractor_cls(media, 1, (min(episodes), max(episodes)))
     else:
         extractor = extractor_cls(media)
 
