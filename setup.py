@@ -3,7 +3,7 @@ from pip.req import parse_requirements
 import platform
 
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 install_reqs = parse_requirements('requirements.txt', session=False)
 reqs = [str(ir.req) for ir in install_reqs]
