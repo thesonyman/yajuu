@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Yajuu: an automated media downloader
 
 [![Build Status](https://travis-ci.org/vivescere/yajuu.svg?branch=develop)](https://travis-ci.org/vivescere/yajuu)
@@ -172,3 +173,6 @@ The unshorten method checks if it knows the given website. If it doesn't, it ret
 
 ## License
 Yajuu uses the [GNU](LICENSE) general public license.
+=======
+Please see the [develop branch](https://github.com/vivescere/yajuu/tree/develop), as the first release as not been completed yet.
+>>>>>>> 2a90217497a91077b6ff7379bc68c315682b6e74
