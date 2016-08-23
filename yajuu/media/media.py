@@ -23,10 +23,28 @@ class Media:
 
 		"""
 
-		self._metadata = provider(query)
+		result = provider(query)
 
-		if self._metadata is None:
+		if result is None:
 			raise Exception('The media could not be found.')
 
+		self.type, self._metadata = result
+
 	def __getattr__(self, key):
+		'''Tries to get the correspoding key in the self._metadata dict.'''
+
 		return self._metadata[key]
+
+	def __eq__(self, other):
+		'''Defines using the metadata id whether or not the other media is the same.'''
+
+		return (
+			isinstance(other, self.__class__) and
+			self.type == other.type and
+			self.id == other.id
+		)
+
+	def __ne__(self, other):
+		'''Uses the __eq__ method to define whether the other media object is different.'''
+
+		return not self.__eq__(other)

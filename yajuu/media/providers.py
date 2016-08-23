@@ -23,7 +23,16 @@ def bootstrap_provider(type):
 
 
 def anime_provider(query):
-	'''Provides anime metadata using the tvdb api.'''
+	'''Provides anime metadata using the tvdb api.
+
+	Args:
+		query (str): the query to search for
+
+	Returns:
+		tuple: the media type, and the metadata.
+		None: if the media could not 
+
+	'''
 
 	from yajuu.asker import Asker
 	from pytvdbapi import api
@@ -71,4 +80,4 @@ def anime_provider(query):
 
 		metadata['seasons'][season.season_number] = season_data
 
-	return metadata
+	return 'anime', metadata
