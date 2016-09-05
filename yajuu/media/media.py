@@ -15,7 +15,13 @@ class Media:
 
 	"""
 
-	def __init__(self, provider, query, select_result=None):
+	class NotFoundException(Exception):
+
+		"""Raised by the constructor when the results are empty."""
+
+		pass
+
+	def __init__(self, provider, query, select=None):
 		"""Instantiate the media class by fetching the required metadata.
 
 		Args:
@@ -23,17 +29,23 @@ class Media:
 
 		"""
 
-		result = provider(query)
+		result = provider(query, select=select)
 
 		if result is None:
-			raise Exception('The media could not be found.')
+			raise self.NotFoundException('The media could not be found.')
 
 		self.type, self._metadata = result
 
 	def __getattr__(self, key):
 		'''Tries to get the correspoding key in the self._metadata dict.'''
 
-		return self._metadata[key]
+		try:
+			return getattr(super(), key)
+		except AttributeError:
+			try:
+				return self._metadata[key]
+			except KeyError:
+				raise AttributeError(key)
 
 	def __eq__(self, other):
 		'''Defines using the metadata id whether or not the other media is the same.'''

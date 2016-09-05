@@ -22,7 +22,7 @@ def bootstrap_provider(type):
 		return None
 
 
-def anime_provider(query):
+def anime_provider(query, select=None):
 	'''Provides anime metadata using the tvdb api.
 
 	Args:
@@ -30,7 +30,7 @@ def anime_provider(query):
 
 	Returns:
 		tuple: the media type, and the metadata.
-		None: if the media could not 
+		None: if the media could not be downloaded.
 
 	'''
 
@@ -40,8 +40,10 @@ def anime_provider(query):
 
 
 	database = api.TVDB('34FF6CE86D796A6D')
-	asker = Asker.factory()
-	select_result = asker.select_one
+
+	if select is None:
+		asker = Asker.factory()
+		select = asker.select_one
 
 	try:
 		results = database.search(query, 'en')
@@ -51,7 +53,7 @@ def anime_provider(query):
 		elif len(results) == 1:
 			show = results[0]
 		else:
-			identifier = select_result('Please select the correct title', list(
+			identifier = select('Please select the correct title', list(
 				(x.SeriesName, x.id) for x in results
 			))
 
@@ -63,7 +65,7 @@ def anime_provider(query):
 		# Fetch the metadata
 		show.update()
 	except TVDBIndexError:
-		raise not_found_exception
+		return None
 
 	metadata = {}
 	metadata['id'] = show.id
