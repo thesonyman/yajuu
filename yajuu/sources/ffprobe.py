@@ -15,14 +15,12 @@ class FFProbe:
 		]
 
 		process = subprocess.Popen(command, stdout=subprocess.PIPE)
-		out = process.communicate()[0]
+		out = process.communicate()[0].decode('utf-8')
 
-		print('out >> "{}"'.format(out))
-
-		if process.returncode != 0:
+		if process.returncode != 0 or out == '':
 			raise InvalidSourceException()
 
-		self._raw = json.loads(out.decode('utf-8'))
+		self._raw = json.loads(out)
 
 		if self._raw == {}:
 			raise InvalidSourceException()

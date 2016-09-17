@@ -1,5 +1,3 @@
-from enum import Enum
-
 from yajuu.sources import FFProbe
 
 
@@ -13,10 +11,6 @@ class Source:
 
     """
 
-    LANGUAGES = Enum('languages', 'en fr ja und')
-
-    VERSIONS = Enum('versions', 'sub dub raw')
-
     def __init__(self, url, quality=None, language=None, version=None):
         '''Instantiate the source descriptor.
 
@@ -25,7 +19,7 @@ class Source:
         '''
 
         self.url = url
-        self.version = version if version else self.VERSIONS.sub
+        self.version = version if version else 'sub'
 
         if quality is None or language is None:
             self._ffprobe = FFProbe(self.url)
@@ -37,11 +31,7 @@ class Source:
 
         if language is None:
             tag = self._ffprobe.video_stream['tags']['language']
-
-            if hasattr(self.LANGUAGES, tag):
-                self.language = getattr(self.LANGUAGES, tag)
-            else:
-                self.language = self.LANGUAGES.und
+            self.language = tag
         else:
             self.language = language
 
