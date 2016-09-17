@@ -11,11 +11,16 @@ class FFProbe:
 	def __init__(self, url):
 		command = [
 			'ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format',
-			'-show_streams', '-i', url
+			'-show_streams', url
 		]
 
 		process = subprocess.Popen(command, stdout=subprocess.PIPE)
 		out = process.communicate()[0]
+
+		print('out >> "{}"'.format(out))
+
+		if process.returncode != 0:
+			raise InvalidSourceException()
 
 		self._raw = json.loads(out.decode('utf-8'))
 
