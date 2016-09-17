@@ -1,6 +1,8 @@
 import subprocess
 import json
 
+from yajuu.sources import InvalidSourceException
+
 
 class FFProbe:
 
@@ -9,13 +11,16 @@ class FFProbe:
 	def __init__(self, url):
 		command = [
 			'ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format',
-			'-show_streams', url
+			'-show_streams', '-i', url
 		]
 
 		process = subprocess.Popen(command, stdout=subprocess.PIPE)
 		out = process.communicate()[0]
 
 		self._raw = json.loads(out.decode('utf-8'))
+
+		if self._raw == {}:
+			raise InvalidSourceException()
 
 		self.streams = {}
 
