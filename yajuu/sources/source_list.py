@@ -44,6 +44,9 @@ class SourceList:
 
 		return iter(self._sources)
 
+	def __add__(self, other):
+		return SourceList(sources=self._sources + other._sources)
+
 	def filter(self, min_quality=None, max_quality=None, language=None, version=None):
 		'''Yield the sources that follow the wanted rules.
 
@@ -93,8 +96,7 @@ class SourceList:
 
 		'''
 
-		if sources is None:
-			sources = self._sources
+		sources = self._sources
 
 		if output:
 			# So we can align the messages
