@@ -62,7 +62,7 @@ class SourceList:
 
 		# Then, calculate the speed of each source and yield them accordingly
 		for quality in sorted(by_quality, reverse=True):
-			if len(sources) <= 1 and output:
+			if len(by_quality[quality]) <= 1 and output:
 				print('Only one source available for quality {}.'.format(
 					quality
 				))
@@ -71,7 +71,7 @@ class SourceList:
 				continue
 
 			if output:
-				print('Testing {} sources'.format(len(sources)))
+				print('Testing {} sources'.format(len(by_quality[quality])))
 
 			for source in by_quality[quality]:
 				netloc = urllib.parse.urlparse(source.url).netloc
