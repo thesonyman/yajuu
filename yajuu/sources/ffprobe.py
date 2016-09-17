@@ -6,9 +6,23 @@ from yajuu.sources import InvalidSourceException
 
 class FFProbe:
 
-	"""Simple wrapper arround the ffprobe json api."""
+	"""Simple wrapper arround the ffprobe json api.
+
+	This should work with ffprobe or avprobe. You can access the _raw object,
+	but should propbably use the video_stream and other helpers (eg:
+	self.streams). Go ahead and the commands yourself to see the available
+	keys.
+
+	"""
 
 	def __init__(self, url):
+		'''Executes ffprobe, and extracts the informations from the json output.
+
+		Raises:
+			yajuu.sources.InvalidSourceException
+
+		'''
+
 		command = [
 			'ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format',
 			'-show_streams', url

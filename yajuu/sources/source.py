@@ -3,19 +3,31 @@ from yajuu.sources import FFProbe
 
 class Source:
 
-    """Represent a source, an url to an online file.
-    
-    Attributes:
-        LANGUAGES: a list of all the supported languages
-        VERSIONS: a list of all the supported versions
+    """Represent a source, that's to say an url to an online file and it's
+    metadata. Gets needed metadata by itself if needed.
+
+    If not specified, this class will try to get metadata about the stream,
+    that's to say it's quality or language. If you already know the quality and
+    language  (the two values that can be extracted automatically), pass them.
+    It will reduce the run time, as we won't have to call an external tool.
+
+    You can pass whatever value for the language and versions, but you should
+    stick to the conventions: the country code for the language ('und' if
+    unknown) and either 'sub', 'dub', 'raw' or 'und' for the versions.
 
     """
 
     def __init__(self, url, quality=None, language=None, version=None):
         '''Instantiate the source descriptor.
 
+        Args:
+            quality (int): the height of the stream.
+            language (str): the country code of the language.
+            version (str): the 'version' of the video stream (sub, dub, ..)
+
         Raises:
             sources.exceptions.InvalidSourceException
+
         '''
 
         self.url = url

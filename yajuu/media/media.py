@@ -37,7 +37,7 @@ class Media:
 		self.type, self._metadata = result
 
 	def __getattr__(self, key):
-		'''Tries to get the correspoding key in the self._metadata dict.'''
+		'''Tries to get the corresponding key in the self._metadata dict.'''
 
 		try:
 			return getattr(super(), key)

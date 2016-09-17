@@ -9,23 +9,55 @@ from yajuu.sources.source import Source
 
 class SourceList:
 
-	"""Simple way to organize sources (yajuu.media.source.Source).
+	"""Simple way to organize sources (yajuu.media.Source) and sort / filter them.
 
-	You can class them by quality or lang, ... And even by speed.
+	This class WILL make connections and download a bit of the file to sort
+	them by	speed.
+
+	Note:
+		You can use list on this class to get it as a list, instead of getting
+		the _sources list (eg: use list(sources) instead of sources._sources).
 
 	"""
 
 	def __init__(self, sources=[]):
+		'''Initialize the class.
+
+		Args:
+			sources (list): an already filled list of sources.
+
+		'''
 		self._sources = sources
 
 	def add(self, source):
+		'''Adds a class to the inner list.
+
+		Args:
+			source (yajuu.sources.Source)
+
+		'''
+
 		self._sources.append(source)
 
 	def __iter__(self):
+		'''Iterates over the internal source list.'''
+
 		return iter(self._sources)
 
 	def filter(self, min_quality=None, max_quality=None, language=None, version=None):
-		'''Yield the sources that pass the wanted rules.'''
+		'''Yield the sources that follow the wanted rules.
+
+		Args:
+			min_quality (int)
+			max_quality (int)
+			language (str)
+			version (str)
+
+		Note:
+			See the yajuu.sources.Source class for more information about the
+			language and versions arguments.
+
+		'''
 
 		for source in self._sources:
 			if min_quality is not None and source.quality < min_quality:
@@ -42,7 +74,25 @@ class SourceList:
 
 			yield source
 
-	def sort_by_speed(self, sources=None, output=True):
+	def sort_by_speed(self, output=True):
+		'''Sorts the sources by speed, still preferring quality over speed.
+
+		Args:
+			ouptut (bool): whether to show the messages or not.
+
+		Note:
+			You can access the raw response time: it's stored in all the
+			sources as 'response_time'.
+
+		Returns:
+			Yield the sources, grouped by quality but all separately.
+
+			Example:
+			for source in sources.sort_by_speed():
+				print(source.response_time, source.quality, source.url)
+
+		'''
+
 		if sources is None:
 			sources = self._sources
 
