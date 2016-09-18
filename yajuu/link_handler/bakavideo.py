@@ -1,19 +1,18 @@
 # https://bakavideo.tv/embed/09E9Ba7DI
 
-import re
 import base64
 
 import requests
 from bs4 import BeautifulSoup
 
 from yajuu.sources import SourceList, Source
+from yajuu.link_handler import extract_pattern
 
 
-def handle_link(url, *args, **kwargs):
-    id = re.search(r'https?://bakavideo.tv/embed/(.+)', url).group(1)
-
+@extract_pattern(r'https?://bakavideo.tv/embed/(.+)$')
+def handle_link(identifier, *args, **kwargs):
     data = requests.get(
-        'https://bakavideo.tv/get/files.embed?f={}'.format(id)
+        'https://bakavideo.tv/get/files.embed?f={}'.format(identifier)
     ).json()
 
     html = base64.b64decode(

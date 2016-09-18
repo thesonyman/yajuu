@@ -6,14 +6,11 @@ import requests
 from bs4 import BeautifulSoup
 
 from yajuu.sources import SourceList, Source
+from yajuu.link_handler import extract_pattern
 
 
-def handle_link(url, *args, **kwargs):
-    identifier = re.search(
-        r'^https?:\/\/(?:www)?.solidfiles.com\/d\/(.+?)(?:\/dl)?\/?$',
-        url
-    ).group(1)
-
+@extract_pattern(r'^https?:\/\/(?:www)?.solidfiles.com\/d\/(.+?)(?:\/dl)?\/?$')
+def handle_link(identifier, *args, **kwargs):
     url = 'http://www.solidfiles.com/v/{}'.format(identifier)
     session = requests.Session()  # To persist the cookies
 

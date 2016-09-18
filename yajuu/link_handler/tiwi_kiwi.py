@@ -7,14 +7,11 @@ import requests
 from bs4 import BeautifulSoup
 
 from yajuu.sources import SourceList, Source
+from yajuu.link_handler import extract_pattern
 
 
-def handle_link(url, *args, **kwargs):
-    identifier = re.search(
-        r'^https?:\/\/tiwi.kiwi\/(?:embed-)?(.+)(?:\.html)?(?:#.+)?$',
-        url
-    ).group(1)
-
+@extract_pattern(r'^https?:\/\/tiwi.kiwi\/(?:embed-)?(.+)(?:\.html)?(?:#.+)?$')
+def handle_link(identifier, *args, **kwargs):
     soup = BeautifulSoup(
         requests.get('http://tiwi.kiwi/{}.html'.format(identifier)).text,
         'html.parser'
