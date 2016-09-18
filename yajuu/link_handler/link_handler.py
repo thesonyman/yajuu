@@ -31,7 +31,7 @@ def handle_link(url, *args, **kwargs):
     # Add the netloc of the site here, and then the name of the handler
     handlers = {
         'tiwi.kiwi': 'tiwi_kiwi',
-        'www.solidfiles.com': 'solidfiles',
+        'solidfiles.com': 'solidfiles',
         'vidstream.io': 'vidstream',
         'mp4upload.com': 'mp4upload',
         'stream.moe': 'stream_moe',
