@@ -32,7 +32,6 @@ def handle_link(url, *args, **kwargs):
     handlers = {
         'tiwi.kiwi': 'tiwi_kiwi',
         'solidfiles.com': 'solidfiles',
-        'vidstream.io': 'vidstream',
         'mp4upload.com': 'mp4upload',
         'stream.moe': 'stream_moe',
         'bakavideo.tv': 'bakavideo',
