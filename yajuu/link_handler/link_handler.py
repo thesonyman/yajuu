@@ -15,9 +15,11 @@ def handle_link(url, *args, **kwargs):
     save time for the initial response time.
 
     Note:
-        This should NOT be used to extract informations about 'big' sites. I'm
-        talking about the sites that catalog the videos. This method should be
-        used for providers used on different websites (like a youtube player).
+        Ususually, the link handlers are not specialized in the media type, but
+        in storing files. For example, while kissanime proposes a catalog of
+        videos, they use the google servers to store the videos. You would use
+        an extractor to extract the links the videos from kissanime, and then
+        a link handler to extract the data from the google servers.
 
     Args:
         *args, **kwargs: the arguments to be passed to the sources constructors
