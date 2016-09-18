@@ -38,6 +38,7 @@ def handle_link(url, *args, **kwargs):
         'stream.moe': 'stream_moe',
         'bakavideo.tv': 'bakavideo',
         'drive.google.com': 'google_drive',
+        'docs.google.com': 'google_drive',
         'tusfiles.net': 'tusfiles',
         'upload.af': 'upload_af',
         'openload.co': 'openload',
