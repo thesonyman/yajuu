@@ -7,8 +7,7 @@ class Source:
     metadata. Gets needed metadata by itself if needed.
 
     If not specified, this class will try to get metadata about the stream,
-    that's to say it's quality or language. If you already know the quality and
-    language  (the two values that can be extracted automatically), pass them.
+    that's to say it's quality. If you already know the quality, pass them.
     It will reduce the run time, as we won't have to call an external tool.
 
     You can pass whatever value for the language and versions, but you should
@@ -33,17 +32,14 @@ class Source:
         self.url = url
         self.version = version if version else 'sub'
 
-        if quality is None or language is None:
-            self._ffprobe = FFProbe(self.url)
-
         if quality is None:
+            self._ffprobe = FFProbe(self.url)
             self.quality = self._ffprobe.video_stream['height']
         else:
             self.quality = quality
 
         if language is None:
-            tag = self._ffprobe.video_stream['tags']['language']
-            self.language = tag
+            self.language = 'und'
         else:
             self.language = language
 
