@@ -25,12 +25,11 @@ It's made to be simple to use, just see it in action:
 ## Installation
 To install from the master branch:
 ```bash
-pip install git+https://github.com/vivescere/yajuu.git
-```
+pip3 install git+https://github.com/vivescere/yajuu.git```
 
 Or, from the development branch:
 ```bash
-pip install git+https://github.com/vivescere/yajuu.git@develop
+pip3 install git+https://github.com/vivescere/yajuu.git@develop
 ```
 
 # Supported medias and websites
